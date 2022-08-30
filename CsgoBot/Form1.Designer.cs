@@ -30,11 +30,11 @@
         {
             this.GetInventoryItems = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.button3 = new System.Windows.Forms.Button();
+            this.FiyatAyarla = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.itemleriGetir = new System.Windows.Forms.Button();
+            this.CancelOfferBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -51,8 +51,6 @@
             // dataGridView1
             // 
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.Column1});
             this.dataGridView1.Location = new System.Drawing.Point(59, 188);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
@@ -60,21 +58,15 @@
             this.dataGridView1.Size = new System.Drawing.Size(937, 340);
             this.dataGridView1.TabIndex = 5;
             // 
-            // Column1
+            // FiyatAyarla
             // 
-            this.Column1.HeaderText = "Column1";
-            this.Column1.MinimumWidth = 6;
-            this.Column1.Name = "Column1";
-            this.Column1.Width = 125;
-            // 
-            // button3
-            // 
-            this.button3.Location = new System.Drawing.Point(433, 39);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(143, 39);
-            this.button3.TabIndex = 10;
-            this.button3.Text = "Fiyat Ayarla";
-            this.button3.UseVisualStyleBackColor = true;
+            this.FiyatAyarla.Location = new System.Drawing.Point(433, 39);
+            this.FiyatAyarla.Name = "FiyatAyarla";
+            this.FiyatAyarla.Size = new System.Drawing.Size(143, 39);
+            this.FiyatAyarla.TabIndex = 10;
+            this.FiyatAyarla.Text = "Fiyat Ayarla";
+            this.FiyatAyarla.UseVisualStyleBackColor = true;
+            this.FiyatAyarla.Click += new System.EventHandler(this.FiyatAyarlaButton);
             // 
             // textBox2
             // 
@@ -102,12 +94,23 @@
             this.itemleriGetir.Text = "Itemleri Getir (Envanter)";
             this.itemleriGetir.UseVisualStyleBackColor = true;
             // 
+            // CancelOfferBtn
+            // 
+            this.CancelOfferBtn.Location = new System.Drawing.Point(859, 119);
+            this.CancelOfferBtn.Name = "CancelOfferBtn";
+            this.CancelOfferBtn.Size = new System.Drawing.Size(137, 43);
+            this.CancelOfferBtn.TabIndex = 11;
+            this.CancelOfferBtn.Text = "Cancel Offer";
+            this.CancelOfferBtn.UseVisualStyleBackColor = true;
+            this.CancelOfferBtn.Click += new System.EventHandler(this.CancelOfferButton);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1079, 593);
-            this.Controls.Add(this.button3);
+            this.Controls.Add(this.CancelOfferBtn);
+            this.Controls.Add(this.FiyatAyarla);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.itemleriGetir);
@@ -125,10 +128,10 @@
 
         private Button GetInventoryItems;
         private DataGridView dataGridView1;
-        private DataGridViewTextBoxColumn Column1;
-        private Button button3;
+        private Button FiyatAyarla;
         private TextBox textBox2;
         private TextBox textBox1;
         private Button itemleriGetir;
+        private Button CancelOfferBtn;
     }
 }

@@ -1,10 +1,14 @@
 ﻿using CsgoBot.Models;
+using Newtonsoft.Json;
 using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace CsgoBot
 {
     public partial class Form1 : Form
     {
+        private static readonly HttpClient client = new HttpClient();
         public Form1()
         {
             InitializeComponent();
@@ -22,7 +26,7 @@ namespace CsgoBot
                 return;
 
             dataGridView1.Visible = true;
-            dataGridView1.Size = new System.Drawing.Size(800, 800);
+            dataGridView1.Size = new System.Drawing.Size(1200, 1200);
 
             //Kullanıcıya yeni kayıt ekleme izni.
             dataGridView1.AllowUserToAddRows = true;
@@ -65,6 +69,64 @@ namespace CsgoBot
         }
 
 
+        private async void FiyatAyarlaButton(object sender, EventArgs e)
+        {
+            MakeOfferResponse res = null;
+            await Task.Run(() =>
+            {
+
+                res = MakeOffer2("https://api.shadowpay.com/api/v2/user/offers").Result;
+            });
+
+            //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
+
+            dataGridView1.Visible = true;
+            dataGridView1.Size = new System.Drawing.Size(1200, 1200);
+
+
+            //Veriye tıklandığında satır seçimi sağlama.
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            //DataGridView sütun oluşturma
+            dataGridView1.ColumnCount = 8;
+            dataGridView1.Columns[0].Name = "ID";
+            dataGridView1.Columns[1].Name = "Name";
+            dataGridView1.Columns[2].Name = "Price";
+            dataGridView1.Columns[3].Name = "Time Created";
+            dataGridView1.Columns[4].Name = "Asset Id";
+            dataGridView1.Columns[5].Name = "State";
+            dataGridView1.Columns[6].Name = "Price with Fee";
+            dataGridView1.Columns[7].Name = "Steam Id";
+
+            foreach (var item in res.data)
+            {
+                string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
+                                              item.price.ToString(), item.time_created,
+                                              item.asset_id, item.state,
+                                              item.price_with_fee.ToString(), item.steamid };
+                dataGridView1.Rows.Add(row);
+            }
+
+            //Kullanıcıya yeni kayıt ekleme izni.
+            dataGridView1.AllowUserToAddRows = true;
+
+            //Kullanıcıya kayıt silme izni.
+            dataGridView1.AllowUserToDeleteRows = true;
+
+            //Veriye tıklandığında satır seçimi sağlama.
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+
+
+        private async void CancelOfferButton(object sender, EventArgs e)
+        {
+            await Task.Run(() =>
+            {
+                var cancelResult = CancelOffer("https://api.shadowpay.com/api/v2/user/offers");
+            });
+            //return "bang bang";
+            var something = 5;
+        }
 
         public Inventory GetInventory(string accessToken, string path)
         {
@@ -80,5 +142,153 @@ namespace CsgoBot
 
             return items;
         }
+
+        private async Task<MakeOfferResponse> MakeOffer2(string path)
+        {
+
+            var itemPrice = textBox2.Text;
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            //var itemId = GetItemId();
+            var offersList = new List<Offer>
+            {
+                new Offer
+                {
+                    id = "26762748734",
+                    price = itemPrice.ToString() ,
+                    project = "csgo" ,
+                    currency = "USD"
+                }
+            };
+            var offerData = new Dictionary<string, List<Offer>>();
+            offerData.Add("offers", offersList);
+
+            var json = JsonConvert.SerializeObject(offerData);
+            var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", accessToken);
+
+            // Eger varsa item satisini iptal et
+            await Task.Run(() =>
+            {
+                var cancelResult = CancelOffer("https://api.shadowpay.com/api/v2/user/offers");
+            });
+
+
+            var response = await client.PostAsync(path, stringContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentStream = await response.Content.ReadAsStreamAsync();
+
+                using var streamReader = new StreamReader(contentStream);
+                try
+                {
+                    var result = streamReader.ReadToEnd();
+                    var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
+                    return data;
+                }
+                catch (JsonReaderException)
+                {
+                    Console.WriteLine("Gecersiz JSON.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+            }
+            return null;
+        }
+
+        private string CancelOffer(string path)
+        {
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            var response = string.Empty;
+            var cancelItemIds = new List<int>();
+            int itemId = 0;
+            var resultItem = GetItemsOnOffers().data.Count;
+            if (resultItem > 0)
+                itemId = GetItemsOnOffers().data[0].id;
+            else
+                return null;
+            
+            
+            // eger id yoksa null cevir
+            //if (itemId == null)
+            //{
+            //    return null;
+            //}
+
+            // silmek istedigin itemlerin idsini ekle
+            cancelItemIds.Add(itemId);
+
+            // 
+            var cancelList = new Dictionary<string, List<int>>();
+            cancelList.Add("item_ids", cancelItemIds);
+
+            //var request = new HttpRequestMessage(HttpMethod.Delete, path);
+            //request.Content = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
+
+            //HttpResponseMessage result = await client.SendAsync(request);
+
+            //if (result.IsSuccessStatusCode)
+            //{
+            //    response = result.StatusCode.ToString();
+            //}
+
+            ////return response.Content.;
+            //return response;
+
+            string URL = "http://localhost:xxxxx/api/values";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
+            request.Method = "DELETE";
+            request.ContentType = "application/json";
+            request.Headers.Add("Authorization", "Bearer " + accessToken);
+            string data = Newtonsoft.Json.JsonConvert.SerializeObject(cancelList);
+            request.ContentLength = data.Length;
+            StreamWriter requestWriter = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
+            requestWriter.Write(data);
+            requestWriter.Close();
+
+            try
+            {
+                WebResponse webResponse = request.GetResponse();
+                Stream webStream = webResponse.GetResponseStream();
+                StreamReader responseReader = new StreamReader(webStream);
+                response = responseReader.ReadToEnd();
+
+                responseReader.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return response.ToString();
+        }
+
+        private MakeOfferResponse GetItemsOnOffers()
+        {
+            //if (textBox1.Text != "")
+            //    itemName = textBox1.Text;
+
+            string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?token=5694e257ec0dc1ca476024eb5f15ded7";
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
+            request.ContentType = "application/json";
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            
+            MakeOfferResponse inventory = System.Text.Json.JsonSerializer.Deserialize<MakeOfferResponse>(content);
+            //Inventory pricesByName = itemPrices.data.FindAll(x => x.steam_market_hash_name == itemName).ToList();
+
+            //if (inventory.data.Count > 0)
+            //{
+            //    return inventory;
+            //}
+            //var newInventory = new Inventory();
+            return inventory;
+
+        }
+
     }
 }
