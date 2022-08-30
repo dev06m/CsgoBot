@@ -35,6 +35,7 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.itemleriGetir = new System.Windows.Forms.Button();
             this.CancelOfferBtn = new System.Windows.Forms.Button();
+            this.SatisListesiBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -104,11 +105,22 @@
             this.CancelOfferBtn.UseVisualStyleBackColor = true;
             this.CancelOfferBtn.Click += new System.EventHandler(this.CancelOfferButton);
             // 
+            // SatisListesiBtn
+            // 
+            this.SatisListesiBtn.Location = new System.Drawing.Point(713, 45);
+            this.SatisListesiBtn.Name = "SatisListesiBtn";
+            this.SatisListesiBtn.Size = new System.Drawing.Size(113, 42);
+            this.SatisListesiBtn.TabIndex = 12;
+            this.SatisListesiBtn.Text = "Satış Listesi";
+            this.SatisListesiBtn.UseVisualStyleBackColor = true;
+            this.SatisListesiBtn.Click += new System.EventHandler(this.SatisListesiButton);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1079, 593);
+            this.Controls.Add(this.SatisListesiBtn);
             this.Controls.Add(this.CancelOfferBtn);
             this.Controls.Add(this.FiyatAyarla);
             this.Controls.Add(this.textBox2);
@@ -133,5 +145,6 @@
         private TextBox textBox1;
         private Button itemleriGetir;
         private Button CancelOfferBtn;
+        private Button SatisListesiBtn;
     }
 }

@@ -27,7 +27,7 @@ namespace CsgoBot.Models
     public class MakeOfferResponse
     {
         public List<Datum> data { get; set; }
-        public Metadata metadata { get; set; }
+        public MetadataCancel metadata { get; set; }
         public string status { get; set; }
     }
 

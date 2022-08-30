@@ -81,7 +81,8 @@ namespace CsgoBot
             //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
 
             dataGridView1.Visible = true;
-            dataGridView1.Size = new System.Drawing.Size(1200, 1200);
+            dataGridView1.ScrollBars = ScrollBars.Both;
+            dataGridView1.Size = new System.Drawing.Size(2000, 1200);
 
 
             //Veriye tıklandığında satır seçimi sağlama.
@@ -127,6 +128,60 @@ namespace CsgoBot
             //return "bang bang";
             var something = 5;
         }
+
+        private async void SatisListesiButton(object sender, EventArgs e)
+        {
+            ItemsOnOffer res = null;
+            await Task.Run(() =>
+            {
+
+                res = SatisListesi("https://api.shadowpay.com/api/v2/user/offers").Result;
+            });
+
+            //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
+
+            dataGridView1.Visible = true;
+            dataGridView1.ScrollBars = ScrollBars.Both;
+            dataGridView1.Size = new System.Drawing.Size(800, 800);
+
+
+            //Veriye tıklandığında satır seçimi sağlama.
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            //DataGridView sütun oluşturma
+            dataGridView1.ColumnCount = 10;
+            dataGridView1.Columns[0].Name = "ID";
+            dataGridView1.Columns[1].Name = "Name";
+            dataGridView1.Columns[2].Name = "Price";
+            dataGridView1.Columns[3].Name = "Time Created";
+            dataGridView1.Columns[4].Name = "Asset Id";
+            dataGridView1.Columns[5].Name = "State";
+            dataGridView1.Columns[6].Name = "Price with Fee";
+            dataGridView1.Columns[7].Name = "Steam Id";
+            dataGridView1.Columns[8].Name = "Min Price";
+            dataGridView1.Columns[9].Name = "Max Price";
+
+            foreach (var item in res.data)
+            {
+                string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
+                                              item.price.ToString(), item.time_created,
+                                              item.asset_id, item.state,
+                                              item.price_with_fee.ToString(), item.steamid, 
+                                              //item.settings.min_price.ToString(), item.settings.max_price.ToString()
+                                            };
+                dataGridView1.Rows.Add(row);
+            }
+
+            //Kullanıcıya yeni kayıt ekleme izni.
+            dataGridView1.AllowUserToAddRows = true;
+
+            //Kullanıcıya kayıt silme izni.
+            dataGridView1.AllowUserToDeleteRows = true;
+
+            //Veriye tıklandığında satır seçimi sağlama.
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+
 
         public Inventory GetInventory(string accessToken, string path)
         {
@@ -211,32 +266,11 @@ namespace CsgoBot
             else
                 return null;
             
-            
-            // eger id yoksa null cevir
-            //if (itemId == null)
-            //{
-            //    return null;
-            //}
-
-            // silmek istedigin itemlerin idsini ekle
             cancelItemIds.Add(itemId);
 
             // 
             var cancelList = new Dictionary<string, List<int>>();
             cancelList.Add("item_ids", cancelItemIds);
-
-            //var request = new HttpRequestMessage(HttpMethod.Delete, path);
-            //request.Content = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
-
-            //HttpResponseMessage result = await client.SendAsync(request);
-
-            //if (result.IsSuccessStatusCode)
-            //{
-            //    response = result.StatusCode.ToString();
-            //}
-
-            ////return response.Content.;
-            //return response;
 
             string URL = "http://localhost:xxxxx/api/values";
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
@@ -262,6 +296,7 @@ namespace CsgoBot
             {
 
             }
+            // response string seklinde CanceledItem a cevirmen lazim
             return response.ToString();
         }
 
@@ -288,6 +323,22 @@ namespace CsgoBot
             //var newInventory = new Inventory();
             return inventory;
 
+        }
+
+        private async Task<ItemsOnOffer> SatisListesi(string path)
+        {
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            string itemListPath = path + "?token=" + accessToken;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
+            request.ContentType = "application/json";
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            //JObject json = JObject.Parse(content);
+            var items = System.Text.Json.JsonSerializer.Deserialize<ItemsOnOffer>(content);
+
+            return items;
         }
 
     }
