@@ -46,6 +46,7 @@
             this.GetInventoryItems.TabIndex = 3;
             this.GetInventoryItems.Text = "Envanteri Goster (Itemler)";
             this.GetInventoryItems.UseVisualStyleBackColor = true;
+            this.GetInventoryItems.Click += new System.EventHandler(this.GetInventoryItems_Click);
             // 
             // dataGridView1
             // 
