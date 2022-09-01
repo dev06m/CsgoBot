@@ -33,7 +33,7 @@
             this.FiyatAyarla = new System.Windows.Forms.Button();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.itemleriGetir = new System.Windows.Forms.Button();
+            this.itemlerinFiyatiniGetir = new System.Windows.Forms.Button();
             this.CancelOfferBtn = new System.Windows.Forms.Button();
             this.SatisListesiBtn = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -85,15 +85,16 @@
             this.textBox1.TabIndex = 8;
             this.textBox1.Text = "Item Adi Giriniz";
             // 
-            // itemleriGetir
+            // itemlerinFiyatiniGetir
             // 
-            this.itemleriGetir.AllowDrop = true;
-            this.itemleriGetir.Location = new System.Drawing.Point(433, 84);
-            this.itemleriGetir.Name = "itemleriGetir";
-            this.itemleriGetir.Size = new System.Drawing.Size(143, 50);
-            this.itemleriGetir.TabIndex = 7;
-            this.itemleriGetir.Text = "Itemleri Getir (Envanter)";
-            this.itemleriGetir.UseVisualStyleBackColor = true;
+            this.itemlerinFiyatiniGetir.AllowDrop = true;
+            this.itemlerinFiyatiniGetir.Location = new System.Drawing.Point(433, 84);
+            this.itemlerinFiyatiniGetir.Name = "itemlerinFiyatiniGetir";
+            this.itemlerinFiyatiniGetir.Size = new System.Drawing.Size(143, 50);
+            this.itemlerinFiyatiniGetir.TabIndex = 7;
+            this.itemlerinFiyatiniGetir.Text = "Itemlerin Fiyatlarini Getir";
+            this.itemlerinFiyatiniGetir.UseVisualStyleBackColor = true;
+            this.itemlerinFiyatiniGetir.Click += new System.EventHandler(this.itemlerinFiyatiniGetirButton);
             // 
             // CancelOfferBtn
             // 
@@ -125,7 +126,7 @@
             this.Controls.Add(this.FiyatAyarla);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.itemleriGetir);
+            this.Controls.Add(this.itemlerinFiyatiniGetir);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.GetInventoryItems);
             this.Name = "Form1";
@@ -143,7 +144,7 @@
         private Button FiyatAyarla;
         private TextBox textBox2;
         private TextBox textBox1;
-        private Button itemleriGetir;
+        private Button itemlerinFiyatiniGetir;
         private Button CancelOfferBtn;
         private Button SatisListesiBtn;
     }

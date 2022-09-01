@@ -11,8 +11,8 @@ namespace CsgoBot.Models
     public class DatumOffer
     {
         public int id { get; set; }
-        public int price { get; set; }
-        public int floatvalue { get; set; }
+        public double price { get; set; }
+        public double floatvalue { get; set; }
         public object paintindex { get; set; }
         public object paintseed { get; set; }
         public string link { get; set; }

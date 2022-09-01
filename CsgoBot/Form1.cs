@@ -25,6 +25,9 @@ namespace CsgoBot
             if (inventory == null)
                 return;
 
+            //tabloyu temizle
+            CleanRows();
+
             dataGridView1.Visible = true;
             dataGridView1.Size = new System.Drawing.Size(1200, 1200);
 
@@ -79,6 +82,9 @@ namespace CsgoBot
             });
 
             //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
+
+            //tabloyu temizle
+            CleanRows();
 
             dataGridView1.Visible = true;
             dataGridView1.ScrollBars = ScrollBars.Both;
@@ -140,9 +146,12 @@ namespace CsgoBot
 
             //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
 
+            //tabloyu temizle
+            CleanRows();
+
             dataGridView1.Visible = true;
             dataGridView1.ScrollBars = ScrollBars.Both;
-            dataGridView1.Size = new System.Drawing.Size(800, 800);
+            dataGridView1.Size = new System.Drawing.Size(1200, 800);
 
 
             //Veriye tıklandığında satır seçimi sağlama.
@@ -180,6 +189,17 @@ namespace CsgoBot
 
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        }
+
+        private async void itemlerinFiyatiniGetirButton(object sender, EventArgs e)
+        {
+            ItemsOnOffer res = null;
+            await Task.Run(() =>
+            {
+
+                res = itemlerinFiyatiniGetirGetir("https://api.shadowpay.com/api/v2/user/items/prices").Result;
+            });
+
         }
 
 
@@ -339,6 +359,28 @@ namespace CsgoBot
             var items = System.Text.Json.JsonSerializer.Deserialize<ItemsOnOffer>(content);
 
             return items;
+        }
+
+        private void itemlerinFiyatiniGetirGetir(string path)
+        {
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            string itemListPath = path + "?token=" + accessToken;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
+            request.ContentType = "application/json";
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            //JObject json = JObject.Parse(content);
+            var items = System.Text.Json.JsonSerializer.Deserialize<ItemsOnOffer>(content);
+
+            return items;
+        }
+
+        private void CleanRows()
+        {
+            dataGridView1.Rows.Clear();
+            dataGridView1.Refresh();
         }
 
     }

@@ -10,7 +10,7 @@ namespace CsgoBot.Models
     {
         public int id { get; set; }
         public double price { get; set; }
-        public int floatvalue { get; set; }
+        public float floatvalue { get; set; }
         public object paintindex { get; set; }
         public object paintseed { get; set; }
         public string link { get; set; }
