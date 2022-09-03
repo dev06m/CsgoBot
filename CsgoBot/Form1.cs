@@ -105,6 +105,9 @@ namespace CsgoBot
             dataGridView1.Columns[6].Name = "Price with Fee";
             dataGridView1.Columns[7].Name = "Steam Id";
 
+            if (res.data == null)
+                res.data = new List<Datum>();
+
             foreach (var item in res.data)
             {
                 string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
@@ -193,13 +196,37 @@ namespace CsgoBot
 
         private async void itemlerinFiyatiniGetirButton(object sender, EventArgs e)
         {
-            ItemsOnOffer res = null;
+            PriceDatum item = null;
             await Task.Run(() =>
             {
-
-                res = itemlerinFiyatiniGetirGetir("https://api.shadowpay.com/api/v2/user/items/prices").Result;
+                string itemName = FindNameById(Int32.Parse(textBox1.Text));
+                item = itemlerinFiyatiniGetirGetir("https://api.shadowpay.com/api/v2/user/items/prices", itemName).Result;
             });
 
+            //tabloyu temizle
+            CleanRows();
+
+            dataGridView1.Visible = true;
+            dataGridView1.ScrollBars = ScrollBars.Both;
+            dataGridView1.Size = new System.Drawing.Size(1200, 800);
+
+
+            //Veriye tıklandığında satır seçimi sağlama.
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            //DataGridView sütun oluşturma
+            dataGridView1.ColumnCount = 3;
+            dataGridView1.Columns[0].Name = "Steam Market Hash Name";
+            dataGridView1.Columns[1].Name = "Price";
+            dataGridView1.Columns[2].Name = "Volume";
+
+            if (item != null)
+            {
+                string[] row = new string[] { item.steam_market_hash_name, item.price,
+                                              item.volume
+                                            };
+                dataGridView1.Rows.Add(row);
+            }
         }
 
 
@@ -361,7 +388,7 @@ namespace CsgoBot
             return items;
         }
 
-        private void itemlerinFiyatiniGetirGetir(string path)
+        private async Task<PriceDatum> itemlerinFiyatiniGetirGetir(string path, string itemName)
         {
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
             string itemListPath = path + "?token=" + accessToken;
@@ -372,10 +399,33 @@ namespace CsgoBot
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
             //JObject json = JObject.Parse(content);
-            var items = System.Text.Json.JsonSerializer.Deserialize<ItemsOnOffer>(content);
+            var items = System.Text.Json.JsonSerializer.Deserialize<PriceRoot>(content);
 
-            return items;
+            var filteredItems = items.data.Where(x => x.steam_market_hash_name == itemName).ToList();
+
+            if (filteredItems.Count == 0)
+                return null;
+
+            return filteredItems[0];
         }
+
+        private string FindNameById(int id)
+        {
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            string itemListPath = "https://api.shadowpay.com/api/v2/user/items/" + id + "-?token=" + accessToken;
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
+            request.ContentType = "application/json";
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            //JObject json = JObject.Parse(content);
+            var item = System.Text.Json.JsonSerializer.Deserialize<SingleItem>(content);
+
+            return item.data.item.steam_item.steam_market_hash_name;
+        }
+
+        private void SetLowestPrice() { }
 
         private void CleanRows()
         {
