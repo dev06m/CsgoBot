@@ -10,21 +10,21 @@ namespace CsgoBot.Models
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class DatumOffer
     {
-        public int id { get; set; }
-        public double price { get; set; }
-        public double floatvalue { get; set; }
-        public object paintindex { get; set; }
-        public object paintseed { get; set; }
-        public string link { get; set; }
-        public string time_created { get; set; }
-        public SteamItem steam_item { get; set; }
-        public List<object> stickers { get; set; }
-        public string asset_id { get; set; }
-        public string state { get; set; }
-        public double price_with_fee { get; set; }
-        public string steamid { get; set; }
-        public object custom_id { get; set; }
-        public Settings settings { get; set; }
+        public int? id { get; set; }
+        public double? price { get; set; }
+        public double? floatvalue { get; set; }
+        public object? paintindex { get; set; }
+        public object? paintseed { get; set; }
+        public string? link { get; set; }
+        public string? time_created { get; set; }
+        public SteamItem? steam_item { get; set; }
+        public List<object>? stickers { get; set; }
+        public string? asset_id { get; set; }
+        public string? state { get; set; }
+        public double? price_with_fee { get; set; }
+        public string? steamid { get; set; }
+        public object? custom_id { get; set; }
+        public Settings? settings { get; set; }
     }
 
     public class MetadataOffer

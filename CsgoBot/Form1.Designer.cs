@@ -36,6 +36,8 @@
             this.itemlerinFiyatiniGetir = new System.Windows.Forms.Button();
             this.CancelOfferBtn = new System.Windows.Forms.Button();
             this.SatisListesiBtn = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.textBox3 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -116,11 +118,31 @@
             this.SatisListesiBtn.UseVisualStyleBackColor = true;
             this.SatisListesiBtn.Click += new System.EventHandler(this.SatisListesiButton);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(713, 126);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(94, 29);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "Hile";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // textBox3
+            // 
+            this.textBox3.Location = new System.Drawing.Point(157, 145);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(125, 27);
+            this.textBox3.TabIndex = 14;
+            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1079, 593);
+            this.ClientSize = new System.Drawing.Size(1482, 753);
+            this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.SatisListesiBtn);
             this.Controls.Add(this.CancelOfferBtn);
             this.Controls.Add(this.FiyatAyarla);
@@ -131,6 +153,7 @@
             this.Controls.Add(this.GetInventoryItems);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -147,5 +170,7 @@
         private Button itemlerinFiyatiniGetir;
         private Button CancelOfferBtn;
         private Button SatisListesiBtn;
+        private Button button1;
+        private TextBox textBox3;
     }
 }

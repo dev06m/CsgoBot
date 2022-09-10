@@ -12,15 +12,26 @@ namespace CsgoBot
         public Form1()
         {
             InitializeComponent();
+            Console.WriteLine("Selam Dunyali");
+            //Thread th = new Thread(() =>
+            //{
+            //    int count = 0;
+            //    while (true)
+            //    {
+            //        SetLowestPrice();
+            //        Console.WriteLine("{0} Selam Dunya", count);
+            //        count++;
+            //    }
+            //});
+            //th.Start();
         }
 
         private void GetInventoryItems_Click(object sender, EventArgs e)
         {
             //string accessToken = Environment.GetEnvironmentVariable("AccessKey");
             //string path = Environment.GetEnvironmentVariable("GetInventoryPath");
-            string accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
             string path = "https://api.shadowpay.com/api/v2/user/inventory";
-            Inventory inventory = GetInventory(accessToken, path);
+            Inventory inventory = GetInventory();
 
             if (inventory == null)
                 return;
@@ -29,7 +40,13 @@ namespace CsgoBot
             CleanRows();
 
             dataGridView1.Visible = true;
-            dataGridView1.Size = new System.Drawing.Size(1200, 1200);
+            dataGridView1.Size = new System.Drawing.Size(1400, 1400);
+
+            DataGridViewButtonColumn itemOpen = new DataGridViewButtonColumn();
+            itemOpen.Name = "item";
+            itemOpen.Text = "Item";
+
+            dataGridView1.CellClick += random_click;
 
             //Kullanıcıya yeni kayıt ekleme izni.
             dataGridView1.AllowUserToAddRows = true;
@@ -54,11 +71,19 @@ namespace CsgoBot
 
             foreach (var item in inventory.data)
             {
+                int count = 0;
+                if (dataGridView1.Columns["item"] == null)
+                {
+                    dataGridView1.Columns.Insert(count, itemOpen);
+                }
+
                 string[] row = new string[] { item.id.ToString(), item.steam_market_hash_name,
                                               item.suggested_price.ToString(), item.type,
                                               item.rarity, item.asset_id, item.tradable.ToString(),
                                               item.min_price.ToString(), item.max_price.ToString() };
                 dataGridView1.Rows.Add(row);
+
+                count++;
             }
 
             //Kullanıcıya yeni kayıt ekleme izni.
@@ -74,14 +99,14 @@ namespace CsgoBot
 
         private async void FiyatAyarlaButton(object sender, EventArgs e)
         {
+            string price = "0";
             MakeOfferResponse res = null;
             await Task.Run(() =>
             {
 
-                res = MakeOffer2("https://api.shadowpay.com/api/v2/user/offers").Result;
+                res = MakeOffer2(textBox2.Text).Result;
             });
 
-            //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
 
             //tabloyu temizle
             CleanRows();
@@ -132,7 +157,7 @@ namespace CsgoBot
         {
             await Task.Run(() =>
             {
-                var cancelResult = CancelOffer("https://api.shadowpay.com/api/v2/user/offers");
+                var cancelResult = CancelOffer();
             });
             //return "bang bang";
             var something = 5;
@@ -144,10 +169,9 @@ namespace CsgoBot
             await Task.Run(() =>
             {
 
-                res = SatisListesi("https://api.shadowpay.com/api/v2/user/offers").Result;
+                res = SatisListesi().Result;
             });
 
-            //var res = MakeOffer("https://api.shadowpay.com/api/v2/user/offers");
 
             //tabloyu temizle
             CleanRows();
@@ -200,7 +224,7 @@ namespace CsgoBot
             await Task.Run(() =>
             {
                 string itemName = FindNameById(Int32.Parse(textBox1.Text));
-                item = itemlerinFiyatiniGetirGetir("https://api.shadowpay.com/api/v2/user/items/prices", itemName).Result;
+                item = ItemFiyatGetir(itemName).Result;
             });
 
             //tabloyu temizle
@@ -230,8 +254,10 @@ namespace CsgoBot
         }
 
 
-        public Inventory GetInventory(string accessToken, string path)
+        public Inventory GetInventory()
         {
+            string accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            string path = "https://api.shadowpay.com/api/v2/user/inventory";
             string itemListPath = path + "?token=" + accessToken;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
@@ -245,10 +271,10 @@ namespace CsgoBot
             return items;
         }
 
-        private async Task<MakeOfferResponse> MakeOffer2(string path)
+        private async Task<MakeOfferResponse> MakeOffer2(string price)
         {
-
-            var itemPrice = textBox2.Text;
+            // price kismi textbox dan geliyor bu degisecek
+            string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
             //var itemId = GetItemId();
             var offersList = new List<Offer>
@@ -256,7 +282,7 @@ namespace CsgoBot
                 new Offer
                 {
                     id = "26762748734",
-                    price = itemPrice.ToString() ,
+                    price = price,
                     project = "csgo" ,
                     currency = "USD"
                 }
@@ -272,7 +298,7 @@ namespace CsgoBot
             // Eger varsa item satisini iptal et
             await Task.Run(() =>
             {
-                var cancelResult = CancelOffer("https://api.shadowpay.com/api/v2/user/offers");
+                var cancelResult = CancelOffer();
             });
 
 
@@ -301,8 +327,9 @@ namespace CsgoBot
             return null;
         }
 
-        private string CancelOffer(string path)
+        private string CancelOffer()
         {
+            string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
             var response = string.Empty;
             var cancelItemIds = new List<int>();
@@ -372,8 +399,9 @@ namespace CsgoBot
 
         }
 
-        private async Task<ItemsOnOffer> SatisListesi(string path)
+        private async Task<ItemsOnOffer> SatisListesi()
         {
+            string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
             string itemListPath = path + "?token=" + accessToken;
 
@@ -388,10 +416,10 @@ namespace CsgoBot
             return items;
         }
 
-        private async Task<PriceDatum> itemlerinFiyatiniGetirGetir(string path, string itemName)
+        private async Task<PriceDatum> ItemFiyatGetir(string itemName)
         {
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
-            string itemListPath = path + "?token=" + accessToken;
+            string itemListPath = "https://api.shadowpay.com/api/v2/user/items/prices" + "?token=" + accessToken;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
             request.ContentType = "application/json";
@@ -425,7 +453,29 @@ namespace CsgoBot
             return item.data.item.steam_item.steam_market_hash_name;
         }
 
-        private void SetLowestPrice() { }
+        private void SetLowestPrice()
+        {
+            //await Task.Run(() =>
+            //{
+            string itemName = FindNameById(24960274);
+            var lowestPrice = ItemFiyatGetir(itemName).Result;
+            //});
+            var myItem = GetItemsOnOffers();
+            double myItemPrice = 0;
+            if (myItem.data.Count != 0)
+            {
+                myItemPrice = myItem.data[0].price;
+            }
+            var newPrice = myItemPrice.ToString();
+            var doubleLowestPrice = double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture);
+            var result = myItemPrice > doubleLowestPrice;
+            if (myItemPrice > doubleLowestPrice)
+            {
+                var nPrice = double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) - 0.01;
+                newPrice = nPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                MakeOffer2(newPrice);
+            }
+        }
 
         private void CleanRows()
         {
@@ -433,5 +483,30 @@ namespace CsgoBot
             dataGridView1.Refresh();
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
+   
+
+        public void MainMethod()
+        {
+            Console.WriteLine("I GOT A CAR!!!!");
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBox3_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void random_click(object sender, DataGridViewCellEventArgs e)
+        {
+            Console.WriteLine("I am clicked!!");
+        }
     }
 }
