@@ -37,7 +37,10 @@
             this.CancelOfferBtn = new System.Windows.Forms.Button();
             this.SatisListesiBtn = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.satisIdText = new System.Windows.Forms.TextBox();
+            this.hileTextBox = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.cancelItemBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -100,9 +103,9 @@
             // 
             // CancelOfferBtn
             // 
-            this.CancelOfferBtn.Location = new System.Drawing.Point(859, 119);
+            this.CancelOfferBtn.Location = new System.Drawing.Point(713, 51);
             this.CancelOfferBtn.Name = "CancelOfferBtn";
-            this.CancelOfferBtn.Size = new System.Drawing.Size(137, 43);
+            this.CancelOfferBtn.Size = new System.Drawing.Size(106, 43);
             this.CancelOfferBtn.TabIndex = 11;
             this.CancelOfferBtn.Text = "Cancel Offer";
             this.CancelOfferBtn.UseVisualStyleBackColor = true;
@@ -110,7 +113,7 @@
             // 
             // SatisListesiBtn
             // 
-            this.SatisListesiBtn.Location = new System.Drawing.Point(713, 45);
+            this.SatisListesiBtn.Location = new System.Drawing.Point(873, 119);
             this.SatisListesiBtn.Name = "SatisListesiBtn";
             this.SatisListesiBtn.Size = new System.Drawing.Size(113, 42);
             this.SatisListesiBtn.TabIndex = 12;
@@ -128,20 +131,47 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // textBox3
+            // satisIdText
             // 
-            this.textBox3.Location = new System.Drawing.Point(157, 145);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(125, 27);
-            this.textBox3.TabIndex = 14;
-            this.textBox3.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
+            this.satisIdText.Location = new System.Drawing.Point(157, 142);
+            this.satisIdText.Name = "satisIdText";
+            this.satisIdText.Size = new System.Drawing.Size(125, 27);
+            this.satisIdText.TabIndex = 14;
+            this.satisIdText.TextChanged += new System.EventHandler(this.textBox3_TextChanged);
+            // 
+            // hileTextBox
+            // 
+            this.hileTextBox.Location = new System.Drawing.Point(592, 128);
+            this.hileTextBox.Name = "hileTextBox";
+            this.hileTextBox.Size = new System.Drawing.Size(125, 27);
+            this.hileTextBox.TabIndex = 15;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(59, 128);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(92, 54);
+            this.button2.TabIndex = 16;
+            this.button2.Text = "Satis ID Getir";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.satisIdGetir);
+            // 
+            // cancelItemBox
+            // 
+            this.cancelItemBox.Location = new System.Drawing.Point(592, 59);
+            this.cancelItemBox.Name = "cancelItemBox";
+            this.cancelItemBox.Size = new System.Drawing.Size(125, 27);
+            this.cancelItemBox.TabIndex = 17;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 753);
-            this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.cancelItemBox);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.hileTextBox);
+            this.Controls.Add(this.satisIdText);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.SatisListesiBtn);
             this.Controls.Add(this.CancelOfferBtn);
@@ -171,6 +201,9 @@
         private Button CancelOfferBtn;
         private Button SatisListesiBtn;
         private Button button1;
-        private TextBox textBox3;
+        private TextBox satisIdText;
+        private TextBox hileTextBox;
+        private Button button2;
+        private TextBox cancelItemBox;
     }
 }

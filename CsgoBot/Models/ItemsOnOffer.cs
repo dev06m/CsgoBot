@@ -36,16 +36,16 @@ namespace CsgoBot.Models
 
     public class ItemsOnOffer
     {
-        public List<DatumOffer> data { get; set; }
-        public MetadataOffer metadata { get; set; }
-        public string status { get; set; }
+        public List<DatumOffer>? data { get; set; }
+        public MetadataOffer? metadata { get; set; }
+        public string? status { get; set; }
     }
 
     public class Settings
     {
-        public object min_price { get; set; }
-        public object max_price { get; set; }
-        public object manual_lock { get; set; }
+        public object? min_price { get; set; }
+        public object? max_price { get; set; }
+        public object? manual_lock { get; set; }
     }
 
     //public class SteamItem
