@@ -41,6 +41,7 @@
             this.hileTextBox = new System.Windows.Forms.TextBox();
             this.button2 = new System.Windows.Forms.Button();
             this.cancelItemBox = new System.Windows.Forms.TextBox();
+            this.baslat = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -163,11 +164,22 @@
             this.cancelItemBox.Size = new System.Drawing.Size(125, 27);
             this.cancelItemBox.TabIndex = 17;
             // 
+            // baslat
+            // 
+            this.baslat.Location = new System.Drawing.Point(1067, 49);
+            this.baslat.Name = "baslat";
+            this.baslat.Size = new System.Drawing.Size(108, 106);
+            this.baslat.TabIndex = 18;
+            this.baslat.Text = "Başlat";
+            this.baslat.UseVisualStyleBackColor = true;
+            this.baslat.Click += new System.EventHandler(this.baslat_click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 753);
+            this.Controls.Add(this.baslat);
             this.Controls.Add(this.cancelItemBox);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.hileTextBox);
@@ -205,5 +217,6 @@
         private TextBox hileTextBox;
         private Button button2;
         private TextBox cancelItemBox;
+        private Button baslat;
     }
 }

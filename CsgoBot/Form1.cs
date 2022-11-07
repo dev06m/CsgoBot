@@ -30,26 +30,31 @@ namespace CsgoBot
 
         private void GetInventoryItems_Click(object sender, EventArgs e)
         {
+            //tabloyu temizle
+            CleanRows();
             
-            //string accessToken = Environment.GetEnvironmentVariable("AccessKey");
-            //string path = Environment.GetEnvironmentVariable("GetInventoryPath");
             string path = "https://api.shadowpay.com/api/v2/user/inventory";
             Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
 
             if (inventory == null)
                 return;
 
-            //tabloyu temizle
-            CleanRows();
-
             dataGridView1.Visible = true;
-            dataGridView1.Size = new System.Drawing.Size(1400, 1400);
+            dataGridView1.Size = new System.Drawing.Size(900, 1400);
+            //dataGridView1.AutoSize = false;
+            dataGridView1.ScrollBars = ScrollBars.Both;
 
-            DataGridViewButtonColumn itemOpen = new DataGridViewButtonColumn();
-            itemOpen.Name = "Item";
-            itemOpen.Text = "Item";
+            DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
+            checkColumn.Name = "Sat";
+            checkColumn.HeaderText = "Sat";
+            checkColumn.Width = 65;
+            checkColumn.ReadOnly = false;
+            checkColumn.FillWeight = 10; //if the datagridview is resized (on form resize) the checkbox won't take up too much; value is relative to the other columns' fill values
+            //itemOpen.Name = "Item";
+            //itemOpen.Text = "Sayi";
 
-            dataGridView1.CellClick += Temp.random_click;
+            // botu baslatan button
+            //dataGridView1.CellClick += Temp.random_click;
 
             //Kullanıcıya yeni kayıt ekleme izni.
             dataGridView1.AllowUserToAddRows = true;
@@ -61,32 +66,28 @@ namespace CsgoBot
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 10;
-            dataGridView1.Columns[0].Name = "Item";
-            dataGridView1.Columns[1].Name = "ID";
-            dataGridView1.Columns[2].Name = "Name";
-            dataGridView1.Columns[3].Name = "Suggested Price";
-            dataGridView1.Columns[4].Name = "Type";
-            dataGridView1.Columns[5].Name = "Rarity";
-            dataGridView1.Columns[6].Name = "Asset Id";
-            dataGridView1.Columns[7].Name = "Tradable";
-            dataGridView1.Columns[8].Name = "Min Price";
-            dataGridView1.Columns[9].Name = "Max Price";
+            dataGridView1.ColumnCount = 5;
+            dataGridView1.Columns[0].Name = "Name";
+            dataGridView1.Columns[1].Name = "Suggested Price";
+            dataGridView1.Columns[2].Name = "Asset Id";
+            dataGridView1.Columns[3].Name = "Tradable";
+            dataGridView1.Columns[4].Name = "Fiyat ya da interval time";
 
             int count = 1;
+            //var tradeableItems = inventory.data;
             var tradableItems = inventory.data.Where(x => x.tradable == true);
+            dataGridView1.Columns.Add(checkColumn);
             foreach (var item in tradableItems)
             {
-                if (dataGridView1.Columns["item"] == null)
-                {
-                    dataGridView1.Columns.Insert(count, itemOpen);
-                }
+                //if (dataGridView1.Columns["X"] == null)
+                //{
+                //    dataGridView1.Columns.Add(checkColumn);
+                //}
 
 
-                string[] row = new string[] { count.ToString(), item.id.ToString(), item.steam_market_hash_name,
-                                              item.suggested_price.ToString(), item.type,
-                                              item.rarity, item.asset_id, item.tradable.ToString(),
-                                              item.min_price.ToString(), item.max_price.ToString() };
+                string[] row = new string[] { item.steam_market_hash_name,
+                                              item.suggested_price.ToString(), item.asset_id,
+                                              item.tradable.ToString()};
                 dataGridView1.Rows.Add(row);
 
                 count++;
@@ -302,6 +303,24 @@ namespace CsgoBot
             satisIdText.Text = "empty";
             string satisId = GetMethods.FindOfferItemId();
             satisIdText.Text = satisId;
+        }
+
+        private void baslat_click(object sender, EventArgs e)
+        {
+            string path = "https://api.shadowpay.com/api/v2/user/inventory";
+            Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
+            List<InventoryItem> inventoryItems = inventory.data.Where(x => x.tradable == true).ToList();
+
+            if (inventory == null)
+                return;
+
+            if (dataGridView1.SelectedCells.Count > 0)
+            {
+                int selectedrowindex = dataGridView1.SelectedCells[0].RowIndex;
+                var item = inventoryItems[selectedrowindex];
+                DataGridViewRow selectedRow = dataGridView1.Rows[selectedrowindex];
+                //string cellValue = Convert.ToString(selectedRow.Cells["enter column name"].Value);
+            }
         }
 
         //private void random_click(object sender, DataGridViewCellEventArgs e)

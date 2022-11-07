@@ -13,7 +13,7 @@ namespace CsgoBot
     {
         static int count = 0;
         static Thread workerThread1, workerThread2, workerThread3, workerThread4;
-        public static void random_click(object sender, DataGridViewCellEventArgs e)
+        public static void worker_threads(object sender, DataGridViewCellEventArgs e)
         {
             ItemForm itemForm = new ItemForm();
             //itemForm.Show();
