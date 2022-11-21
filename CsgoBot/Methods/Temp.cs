@@ -12,36 +12,44 @@ namespace CsgoBot
     static class Temp
     {
         static int count = 0;
-        static Thread workerThread1, workerThread2, workerThread3, workerThread4;
-        public static void worker_threads(object sender, DataGridViewCellEventArgs e)
+        static Thread workerThread1, workerThread2, workerThread3, workerThread4, workerThread5, workerThread6, workerThread7, workerThread8, workerThread9, workerThread10;
+        public static async void worker_threads(List<Datum> datums)
         {
             ItemForm itemForm = new ItemForm();
-            //itemForm.Show();
-            var offerItems = GetMethods.GetItemsOnOffers();
-            if (offerItems != null)
-            {
-                var itemIds = offerItems.data;
-                //workerThread1 = new Thread(() => Hile(itemIds.FirstOrDefault(x => x.asset_id == "27194641919"), 700));
-                workerThread1 = new Thread(() => Hile(itemIds[0], 500));
-                workerThread2 = new Thread(() => Hile(itemIds[1], 700));
-                workerThread3 = new Thread(() => Hile(itemIds[2], 1000));
-                workerThread4 = new Thread(() => Hile(itemIds[3], 1300));
 
-                workerThread1.Start();
-                workerThread2.Start();
-                workerThread3.Start();
-                workerThread4.Start();
 
-            }
+            workerThread1 = new Thread(() => Hile(datums[0]));
+            //workerThread2 = new Thread(() => Hile(datums[1]));
+            //workerThread3 = new Thread(() => Hile(datums[2]));
+            //workerThread4 = new Thread(() => Hile(datums[3]));
+            //workerThread5 = new Thread(() => Hile(datums[4]));
+            //workerThread6 = new Thread(() => Hile(datums[5]));
+            //workerThread7 = new Thread(() => Hile(datums[6]));
+            //workerThread8 = new Thread(() => Hile(datums[7]));
+            //workerThread9 = new Thread(() => Hile(datums[8]));
+            //workerThread10 = new Thread(() => Hile(datums[9]));
+            //workerThread1 = new Thread(() => Hile(datums[10], miliseconds));
 
+            workerThread1.Start();
+            //workerThread2.Start();
+            //workerThread3.Start();
+            //workerThread4.Start();
+            //workerThread5.Start();
+            //workerThread6.Start();
+            //workerThread7.Start();
+            //workerThread8.Start();
+            //workerThread9.Start();
+            //workerThread10.Start();
 
         }
 
-        public static async void Hile(Datum item, int miliseconds)
+        public static void Hile(Datum item)
         {
+            int miliseconds = item.interval_time;
             var asset_id = item.asset_id;
             var suggestedPriceString = item.steam_item.suggested_price.ToString();
             int count = 1;
+
             while (true)
             {
                 int getIdCount = 0;
@@ -50,16 +58,17 @@ namespace CsgoBot
                 // id null gelirse 5 defa dene hala null geliyorsa else'de makeoffer yapiyoruz
                 while (getIdCount < 5)
                 {
-                    Thread.Sleep(miliseconds);
                     result = GetMethods.GetItemsOnOffers();
-                    if (result != null)
-                        getIdCount = 5;
+                    Thread.Sleep(miliseconds);
+                    if (result.data != null)
+                        if (result.data.Count > 1)
+                            getIdCount = 5;
                     getIdCount++;
                 }
-                    //continue;
-                item = result != null ? result.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
+
+                item = result.data != null ? result.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
                 double itemPrice = 0;
-                //?.data?.FirstOrDefault(x => x.asset_id == asset_id);
+                
                 if (item != null) 
                 {
                     string itemName = item.steam_item.steam_market_hash_name;
@@ -69,7 +78,9 @@ namespace CsgoBot
                     {
                         Thread.Sleep(miliseconds);
                         var lowestPrice = GetMethods.ItemFiyatGetir(itemName).Result;
-                        double doubleLowestPrice = lowestPrice != null ? double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) : item.steam_item.suggested_price;
+                        Thread.Sleep(miliseconds);
+                        itemPrice = Convert.ToDouble(GetMethods.ItemFiyatGetir(itemName).Result.price);
+                        double doubleLowestPrice = lowestPrice.price != null ? double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) : item.steam_item.suggested_price;
                         if (doubleLowestPrice < itemPrice)
                             priceStatus = false;
                         Console.WriteLine($"Dongu icinde Fiyat Ayni | {item.steam_item.steam_market_hash_name} - {doubleLowestPrice} | \n");
@@ -84,12 +95,12 @@ namespace CsgoBot
                     count++;
                 }else
                 {
-                    Console.WriteLine("Item id NULL, fiyat tekrar setleniyor... \n");
+                    Console.WriteLine($"Item id NULL, fiyat tekrar setleniyor... |  {item?.steam_item?.steam_market_hash_name}  | \n");
                     itemPrice = Convert.ToDouble(suggestedPriceString);
                     Thread.Sleep(miliseconds);
                     try
                     {
-                        await PostMethods.MakeOffer(asset_id, suggestedPriceString);
+                        var offerResult = PostMethods.MakeOffer(asset_id, (Convert.ToDouble(suggestedPriceString)*2).ToString());
                     }
                     catch (Exception e)
                     {
@@ -129,21 +140,6 @@ namespace CsgoBot
                 //Console.WriteLine(elapsed_time - start_time);
 
             }
-        }
-
-
-        public  static void Print2(object obj)
-        {
-            int count = 4;
-            Thread.Sleep(4000);
-            Console.WriteLine("Selam"); 
-
-
-        }
-
-        public static void CheckThreadState()
-        {
-
         }
     }
 }

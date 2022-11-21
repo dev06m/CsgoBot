@@ -15,17 +15,6 @@ namespace CsgoBot
         {
             InitializeComponent();
             Console.WriteLine("Selam Dunyali");
-            //Thread th = new Thread(() =>
-            //{
-            //    int count = 0;
-            //    while (true)
-            //    {
-            //        SetLowestPrice();
-            //        Console.WriteLine("{0} Selam Dunya", count);
-            //        count++;
-            //    }
-            //});
-            //th.Start();
         }
 
         private void GetInventoryItems_Click(object sender, EventArgs e)
@@ -33,11 +22,15 @@ namespace CsgoBot
             //tabloyu temizle
             CleanRows();
             
-            string path = "https://api.shadowpay.com/api/v2/user/inventory";
             Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
 
-            if (inventory == null)
+            if (inventory.data == null)
                 return;
+
+            if (inventory.data.Count < 1)
+            {
+                inventory.data = GenerateInventoryItems();
+            }
 
             dataGridView1.Visible = true;
             dataGridView1.Size = new System.Drawing.Size(900, 1400);
@@ -66,12 +59,13 @@ namespace CsgoBot
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 5;
+            dataGridView1.ColumnCount = 6;
             dataGridView1.Columns[0].Name = "Name";
             dataGridView1.Columns[1].Name = "Suggested Price";
             dataGridView1.Columns[2].Name = "Asset Id";
             dataGridView1.Columns[3].Name = "Tradable";
-            dataGridView1.Columns[4].Name = "Fiyat ya da interval time";
+            dataGridView1.Columns[4].Name = "Satis fiyati";
+            dataGridView1.Columns[5].Name = "Interval time(in ms)";
 
             int count = 1;
             //var tradeableItems = inventory.data;
@@ -104,72 +98,6 @@ namespace CsgoBot
         }
 
 
-        private async void FiyatAyarlaButton(object sender, EventArgs e)
-        {   
-            string price = "0";
-            MakeOfferResponse res = new MakeOfferResponse();
-            await Task.Run(() =>
-            {
-
-                //res = Methods.PostMethods.MakeOffer("0", textBox2.Text).Result;
-            });
-
-
-            //tabloyu temizle
-            CleanRows();
-
-            dataGridView1.Visible = true;
-            dataGridView1.ScrollBars = ScrollBars.Both;
-            dataGridView1.Size = new System.Drawing.Size(2000, 1200);
-
-
-            //Veriye tıklandığında satır seçimi sağlama.
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 8;
-            dataGridView1.Columns[0].Name = "ID";
-            dataGridView1.Columns[1].Name = "Name";
-            dataGridView1.Columns[2].Name = "Price";
-            dataGridView1.Columns[3].Name = "Time Created";
-            dataGridView1.Columns[4].Name = "Asset Id";
-            dataGridView1.Columns[5].Name = "State";
-            dataGridView1.Columns[6].Name = "Price with Fee";
-            dataGridView1.Columns[7].Name = "Steam Id";
-
-            if (res.data == null)
-                res.data = new List<Datum>();
-
-            foreach (var item in res.data)
-            {
-                string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
-                                              item.price.ToString(), item.time_created,
-                                              item.asset_id, item.state,
-                                              item.price_with_fee.ToString(), item.steamid };
-                dataGridView1.Rows.Add(row);
-            }
-
-            //Kullanıcıya yeni kayıt ekleme izni.
-            dataGridView1.AllowUserToAddRows = true;
-
-            //Kullanıcıya kayıt silme izni.
-            dataGridView1.AllowUserToDeleteRows = true;
-
-            //Veriye tıklandığında satır seçimi sağlama.
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        }
-
-
-        private async void CancelOfferButton(object sender, EventArgs e)
-        {
-            string cancelItemId = cancelItemBox.Text;
-            await Task.Run(() =>
-            {
-                var cancelResult = Methods.PostMethods.CancelOffer(cancelItemId);
-            });
-            //return "bang bang";
-            var something = 5;
-        }
 
         private async void SatisListesiButton(object sender, EventArgs e)
         {
@@ -204,8 +132,8 @@ namespace CsgoBot
             dataGridView1.Columns[7].Name = "Steam Id";
             dataGridView1.Columns[8].Name = "Min Price";
             dataGridView1.Columns[9].Name = "Max Price";
-
-            foreach (var item in res.data)
+           
+            foreach (var item in res?.data)
             {
                 string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
                                               item.price.ToString(), item.time_created,
@@ -226,43 +154,84 @@ namespace CsgoBot
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
 
-        private async void itemlerinFiyatiniGetirButton(object sender, EventArgs e)
+
+        private void baslat_click(object sender, EventArgs e)
         {
-            PriceDatum item = new PriceDatum();
-            await Task.Run(() =>
+            string path = "https://api.shadowpay.com/api/v2/user/inventory";
+            //Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
+            //List<InventoryItem> inventoryItems = inventory.data.Where(x => x.tradable == true).ToList();
+            List<Datum> datumList = new List<Datum>();
+
+            //if (inventoryItems == null)
+            //{
+            //    inventoryItems = GenerateInventoryItems();
+            //}   
+
+            var rows = dataGridView1.Rows;
+            //DataGridView datagrid = new DataGridView();
+
+            //datagrid.ColumnCount = 6;
+            //datagrid.Columns[0].Name = "Name";
+            //datagrid.Columns[1].Name = "Suggested Price";
+            //datagrid.Columns[2].Name = "Asset Id";
+            //datagrid.Columns[3].Name = "Tradable";
+            //datagrid.Columns[4].Name = "Satis fiyati";
+            //datagrid.Columns[5].Name = "Interval time(in ms)";
+
+            //int index = 0;
+            //foreach (DataGridViewRow row in rows)
+            //{
+            //    if (row.Cells[6].Value != null)
+            //    {
+            //        dataGridView1.Rows.RemoveAt(index);
+            //        ////DataGridViewRow newRow = row;
+            //        //datagrid.Rows.Add(row.Clone());
+            //    }
+            //    index++;
+            //}
+
+            foreach (DataGridViewRow row in rows)
             {
-                string itemName = Methods.GetMethods.FindNameById(textBox1.Text);
-                item = Methods.GetMethods.ItemFiyatGetir(itemName).Result;
-            });
+                if (row.Cells[6].Value == null)
+                    continue; 
+                var isSuggestedNull = row.Cells[4].Value == null;
+                var isTimeIntervalNull = row?.Cells[5].Value == null;
 
-            //tabloyu temizle
-            CleanRows();
-
-            dataGridView1.Visible = true;
-            dataGridView1.ScrollBars = ScrollBars.Both;
-            dataGridView1.Size = new System.Drawing.Size(1200, 800);
-
-
-            //Veriye tıklandığında satır seçimi sağlama.
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 3;
-            dataGridView1.Columns[0].Name = "Steam Market Hash Name";
-            dataGridView1.Columns[1].Name = "Price";
-            dataGridView1.Columns[2].Name = "Volume";
-
-            if (item != null)
-            {
-                string[] row = new string[] { item.steam_market_hash_name, item.price,
-                                              item.volume
-                                            };
-                dataGridView1.Rows.Add(row);
+                string itemName = row.Cells[0].Value.ToString();
+                double suggestedPrice = Convert.ToDouble(row.Cells[1].Value.ToString());
+                string assetId = row.Cells[2].Value.ToString();
+                string tradable = row.Cells[3].Value.ToString(); // kullanilmayacak
+                double determined_price = isSuggestedNull ? 10.0 : Convert.ToDouble(row.Cells[4].Value.ToString()); // SUGGESTEC PRICE YENIDEN SETLENMELI
+                int miliseconds = isTimeIntervalNull ? 1000 : Convert.ToInt32(row?.Cells[5]?.Value?.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
+                //...
+                Datum datum = new Datum()
+                {
+                    steam_item = new SteamItem ()
+                    {
+                        steam_market_hash_name = itemName,
+                        suggested_price = suggestedPrice,
+                        
+                    },
+                    asset_id = assetId,
+                    determined_price = determined_price,
+                    interval_time = miliseconds
+                };
+                datumList.Add(datum);
             }
+            Temp.worker_threads(datumList);
+
+            //if (inventory == null)
+            //    return;
+
+            //if (dataGridView1.SelectedCells.Count > 0)
+            //{
+            //    int selectedrowindex = dataGridView1.SelectedCells[0].RowIndex;
+            //    var cell1 = dataGridView1.Rows[selectedrowindex];
+            //    var item = inventoryItems[selectedrowindex];
+            //    DataGridViewRow selectedRow = dataGridView1.Rows[selectedrowindex];
+            //    //string cellValue = Convert.ToString(selectedRow.Cells["enter column name"].Value);
+            //}
         }
-
-
-
         private void CleanRows()
         {
             dataGridView1.Rows.Clear();
@@ -270,62 +239,41 @@ namespace CsgoBot
             dataGridView1.Refresh();
         }
 
-        private async void button1_Click(object sender, EventArgs e)
+
+        private List<InventoryItem> GenerateInventoryItems()
         {
-            string itemId = hileTextBox.Text;
-            // item id sini FindOfferItem ile buluyor
-            itemId = GetMethods.FindOfferItemId();
-            if (itemId != null)
-            {
-                //PostMethods.SetLowestPrice(itemId);
+            List<InventoryItem> items = new List<InventoryItem>();
+            items = new List<InventoryItem>
+                    {
+                        new InventoryItem
+                        {
+                            steam_market_hash_name = "denem1",
+                            suggested_price = 5.5,
+                            asset_id = "12345",
+                            tradable = true
+                        },
+                        new InventoryItem
+                        {
+                            steam_market_hash_name = "denem2",
+                            suggested_price = 6.5,
+                            asset_id = "12345",
+                            tradable = true
+                        },
+                        new InventoryItem
+                        {
+                            steam_market_hash_name = "denem3",
+                            suggested_price = 7.5,
+                            asset_id = "12345",
+                            tradable = true
+                        },
+                    };
 
-            }
-        }
-   
-
-        public void MainMethod()
-        {
-            Console.WriteLine("I GOT A CAR!!!!");
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox3_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void satisIdGetir(object sender, EventArgs e)
-        {
-            satisIdText.Text = "empty";
-            string satisId = GetMethods.FindOfferItemId();
-            satisIdText.Text = satisId;
+            return items;
         }
 
-        private void baslat_click(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            string path = "https://api.shadowpay.com/api/v2/user/inventory";
-            Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
-            List<InventoryItem> inventoryItems = inventory.data.Where(x => x.tradable == true).ToList();
-
-            if (inventory == null)
-                return;
-
-            if (dataGridView1.SelectedCells.Count > 0)
-            {
-                int selectedrowindex = dataGridView1.SelectedCells[0].RowIndex;
-                var item = inventoryItems[selectedrowindex];
-                DataGridViewRow selectedRow = dataGridView1.Rows[selectedrowindex];
-                //string cellValue = Convert.ToString(selectedRow.Cells["enter column name"].Value);
-            }
+            //PostMethods.MakeOffer();
         }
-
-        //private void random_click(object sender, DataGridViewCellEventArgs e)
-        //{
-        //    Console.WriteLine("I am clicked!!");
-        //}
     }
 }

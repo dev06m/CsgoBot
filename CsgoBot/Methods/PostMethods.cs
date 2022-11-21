@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace CsgoBot.Methods
@@ -14,23 +15,24 @@ namespace CsgoBot.Methods
     {
         private static readonly HttpClient client = new HttpClient();
 
-        public static MakeOfferResponse MakeOffer(Datum item, string price, int miliseconds)
+        public static MakeOfferResponse MakeOffer(Datum item, string price, int miliseconds) // update yaparken
         {
 
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            price = price.Replace(",", ".");
 
-            var offersList = new List<Offer>
+            var offersList = new List<OfferUpdate>
             {
-                new Offer
+                new OfferUpdate
                 {
-                    id = item.asset_id, // asset id dinamik gelecek
-                    price = price,
-                    project = "csgo" ,
+                    id = item.id, // update yaptigimiz icin id olmasi laizm
+                    price = double.Parse(price, System.Globalization.CultureInfo.InvariantCulture),
+                    project = "csgo",
                     currency = "USD"
                 }
             };
-            var offerData = new Dictionary<string, List<Offer>>();
+            var offerData = new Dictionary<string, List<OfferUpdate>>();
             offerData.Add("offers", offersList);
 
             var json = JsonConvert.SerializeObject(offerData);
@@ -39,32 +41,30 @@ namespace CsgoBot.Methods
                 new AuthenticationHeaderValue("Bearer", accessToken);
 
             //Eger varsa item satisini iptal et
-            Thread.Sleep(miliseconds);
-            var cancelResult = CancelOffer(item.id.ToString()).Result;
-
-            if (cancelResult.IsSuccessStatusCode != true)
-            {
-                Thread.Sleep(1000);
-            }
+            //Thread.Sleep(miliseconds);
+            //if (item != null)
+            //{
+            //    var cancelResult = CancelOffer(item.id.ToString());
+            //}
 
             var retry = true;
             
             while (retry)
             {
                 Thread.Sleep(miliseconds);
-                var response = client.PostAsync(path, stringContent).Result;
+                var response = client.PatchAsync(path, stringContent).Result;
 
                 if (response.IsSuccessStatusCode)
                 {
                     retry = false;
-                    var contentStream = response.Content.ReadAsStreamAsync().Result;
+                    var contentStream = response.Content.ReadAsStream();
 
                     using var streamReader = new StreamReader(contentStream);
                     try
                     {
                         var result = streamReader.ReadToEnd();
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                        return data;
+                        return data != null ? data : new MakeOfferResponse();
                     }
                     catch (JsonReaderException)
                     {
@@ -83,7 +83,7 @@ namespace CsgoBot.Methods
         }
 
 
-        public async static Task<HttpResponseMessage> CancelOffer(string itemId)
+        public static Task<HttpResponseMessage> CancelOffer(string itemId)
         {
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
@@ -105,50 +105,20 @@ namespace CsgoBot.Methods
             var stringContent = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
             var request = new HttpRequestMessage(HttpMethod.Delete, path + "?token=" + accessToken);
             request.Content = stringContent;
-            var response = await client.SendAsync(request);
+            var response = client.SendAsync(request);
             return response;
             
-
-            /*
-            var request = new HttpRequestMessage(HttpMethod.Delete, path + "?token=" + accessToken);
-            request.Content = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
-            await client.SendAsync(request);
-            */
-
-            /*
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(path);
-            request.Method = "DELETE";
-            request.ContentType = "application/json";
-            request.Headers.Add("Authorization", "Bearer " + accessToken);
-            string data = Newtonsoft.Json.JsonConvert.SerializeObject(cancelList);
-            request.ContentLength = data.Length;
-            StreamWriter requestWriter = new StreamWriter(request.GetRequestStream(), System.Text.Encoding.ASCII);
-            requestWriter.Write(data);
-            requestWriter.Close();
-
-            try
-            {
-                WebResponse webResponse = request.GetResponse();
-                Stream webStream = webResponse.GetResponseStream();
-                StreamReader responseReader = new StreamReader(webStream);
-                response = responseReader.ReadToEnd();
-
-                responseReader.Close();
-            }
-            catch (Exception ex)
-            {
-
-            }
-
-            return response.ToString();
-            */
         }
 
 
         public async static void SetLowestPrice(Datum item, int miliseconds)
         {
             double suggestedPrice = item.steam_item.suggested_price;
-            double altLimit = suggestedPrice - suggestedPrice*0.15;
+            double altLimit = 0;
+            //if (suggestedPrice > 4)
+            //    altLimit = suggestedPrice - suggestedPrice * 0.05; // ALT LIMIT AYARLA
+            //else
+                altLimit = suggestedPrice - suggestedPrice * 0.11; // ALT LIMIT AYARLA
             string itemId = item.asset_id.ToString();
 
             //string itemName = GetMethods.FindNameById(itemId);
@@ -171,7 +141,7 @@ namespace CsgoBot.Methods
                         string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
                         
                         var result = MakeOffer(item, newPriceString, miliseconds);
-                        Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result}");
+                        Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result} \n");
                         
                     }
                     else
@@ -182,7 +152,7 @@ namespace CsgoBot.Methods
                     }
                 }else
                 {
-                    Console.WriteLine($"Fiyat degisikligi olmadi.");
+                    Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
                 }
             }
         }
@@ -191,46 +161,39 @@ namespace CsgoBot.Methods
         {
             MakeOfferResponse itemsResult = GetMethods.GetItemsOnOffers();
             if (itemsResult == null)
-                return null;
+                return new MakeOfferResponse();
 
             var item = itemsResult != null ? itemsResult.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
 
-            var offersList = new List<Offer>
-            {
-                new Offer
-                {
-                    id = asset_id, // asset id dinamik gelecek
-                    price = price,
-                    project = "csgo" ,
-                    currency = "USD"
-                }
-            };
-            var offerData = new Dictionary<string, List<Offer>>();
-            offerData.Add("offers", offersList);
-
-            var content = new FormUrlEncodedContent((IEnumerable<KeyValuePair<string, string>>)offerData);
-
-            //var json = JsonConvert.SerializeObject(offerData);
-            //var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", accessToken);
             if (item != null)
             {
-                var cancelResult = await CancelOffer(item.id.ToString());
+                var cancelResult = CancelOffer(item.id.ToString());
             }
-            //});
-            //if (cancelResult.IsSuccessStatusCode != true)
-            //{
-            //    Thread.Sleep(1000);
-            //}
+
+            client.DefaultRequestHeaders.Authorization =
+           new AuthenticationHeaderValue("Bearer", accessToken);
+
+            StringContent content = ContentProvider(asset_id, price, item);
 
             var retry = true;
             while (retry)
             {
                 int count = 0;
-                var response = await client.PostAsync(path, content);
+                HttpResponseMessage response = null;
+                if (item == null)
+                {
+                    response = client.PostAsync(path, content).Result;
+
+                } else
+                {
+                    response = client.PatchAsync(path, content).Result;
+                    Thread.Sleep(500);
+                }
+
+                response.EnsureSuccessStatusCode();
+
                 if (response.ReasonPhrase == "Unprocessable Entity")
                 {
                     Console.WriteLine("Unprocessable Entity hatasi olustu, post istegi tekrar gonderiliyor... \n");
@@ -242,18 +205,20 @@ namespace CsgoBot.Methods
                     }
                     retry = false;
                     Console.WriteLine($"Post denemeleri basarisiz oldu... \n");
-                } 
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
                     retry = false;
-                    var contentStream = await response.Content.ReadAsStreamAsync();
+                    var contentStream = response.Content.ReadAsStream();
 
                     using var streamReader = new StreamReader(contentStream);
                     try
                     {
                         var result = streamReader.ReadToEnd();
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                        return data;
+                    Console.WriteLine($"Fiyat setleme basarili... \n");
+                        return data != null ? data : new MakeOfferResponse();
                     }
                     catch (JsonReaderException)
                     {
@@ -266,11 +231,60 @@ namespace CsgoBot.Methods
                 }
                 else
                 {
-                    Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenmeyecek.");
+                    Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
                 }
             }
-            return null;
+            return new MakeOfferResponse();
         }
 
+        private static StringContent ContentProvider(string asset_id, string price, Datum item)
+        {
+
+            List<Offer> offersList = null;
+            price = price.Replace(",", ".");
+            //double double_price = double.Parse(price, System.Globalization.CultureInfo.InvariantCulture);
+
+            if (item == null)
+            {
+                offersList = new List<Offer>
+                    {
+                        new Offer
+                        {
+                            id = asset_id, // asset id dinamik gelecek
+                            price = double.Parse(price, System.Globalization.CultureInfo.InvariantCulture),
+                            project = "csgo" ,
+                            currency = "USD"
+                        }
+                    };
+            }
+            else
+            {
+                offersList = new List<Offer>
+                    {
+                        new Offer
+                        {
+                            id = asset_id, // asset id dinamik gelecek
+                            price = double.Parse(price, System.Globalization.CultureInfo.InvariantCulture),
+                            currency = "USD"
+                        }
+                    };
+
+            }
+            var offerData = new Dictionary<string, List<Offer>>();
+            offerData.Add("offers", offersList);
+
+            using StringContent contentX = new(
+               System.Text.Json.JsonSerializer.Serialize(offerData),
+               Encoding.UTF8,
+               "application/json");
+
+
+            var stringPayload = JsonConvert.SerializeObject(offerData);
+
+            var content = new StringContent(stringPayload, Encoding.UTF8, "application/json");
+
+            return content;
+        }
     }
+
 }

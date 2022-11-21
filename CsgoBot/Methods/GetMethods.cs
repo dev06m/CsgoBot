@@ -22,7 +22,18 @@ namespace CsgoBot.Methods
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
             request.ContentType = "application/json";
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            HttpWebResponse response = null;
+            try
+            {
+                response = (HttpWebResponse)request.GetResponse();
+               
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            if (response == null)
+                return new Inventory();
             var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
             //JObject json = JObject.Parse(content);
             var items = System.Text.Json.JsonSerializer.Deserialize<Inventory>(content);
@@ -57,7 +68,7 @@ namespace CsgoBot.Methods
             {
                 return inventory;
             }
-            return null;
+            return new MakeOfferResponse();
         }
 
         public static async Task<ItemsOnOffer> SatisListesi()
@@ -74,7 +85,7 @@ namespace CsgoBot.Methods
             //JObject json = JObject.Parse(content);
             var items = System.Text.Json.JsonSerializer.Deserialize<ItemsOnOffer>(content);
 
-            return items != null ? items : new ItemsOnOffer();
+            return items ?? new ItemsOnOffer();
         }
 
 
@@ -105,7 +116,7 @@ namespace CsgoBot.Methods
             }
 
             if (lowestPriceObject == null || lowestPriceObject?.Count == 0)
-                return null;
+                return new PriceDatum();
 
             return lowestPriceObject[0];
         }
@@ -126,7 +137,7 @@ namespace CsgoBot.Methods
                 var item = System.Text.Json.JsonSerializer.Deserialize<SingleItem>(content);
                 if (item.data == null)
                 {
-                    return null;
+                    return "";
                 }
                 return item.data.item.steam_item.steam_market_hash_name;
             }
@@ -136,33 +147,33 @@ namespace CsgoBot.Methods
             }
         }
 
-        public static string FindOfferItemId()
-        {
-            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
-            string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?token=" + accessToken;
+        //public static string FindOfferItemId()
+        //{
+        //    var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+        //    string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?token=" + accessToken;
 
-            try
-            {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
-                request.ContentType = "application/json";
+        //    try
+        //    {
+        //        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
+        //        request.ContentType = "application/json";
 
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                //JObject json = JObject.Parse(content);
-                var item = System.Text.Json.JsonSerializer.Deserialize<Offers>(content);
-                if (item.data.Count == 0)
-                {
-                    return null;
-                }
-                // yoksa null cevirir ve uygulama patlar
-                return item.data[0].id.ToString(); // degisecek, isme gore bulunabilir olabir
-            }
-            catch (Exception exp)
-            {
+        //        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        //        var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
+        //        //JObject json = JObject.Parse(content);
+        //        var item = System.Text.Json.JsonSerializer.Deserialize<Offers>(content);
+        //        if (item?.data.Count == 0)
+        //        {
+        //            return;
+        //        }
+        //        // yoksa null cevirir ve uygulama patlar
+        //        return item.data[0].id.ToString(); // degisecek, isme gore bulunabilir olabir
+        //    }
+        //    catch (Exception exp)
+        //    {
 
-                throw exp;
-            }
-        }
+        //        throw exp;
+        //    }
+        //}
 
     }
 }

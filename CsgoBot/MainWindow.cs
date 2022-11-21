@@ -14,20 +14,6 @@ namespace CsgoBot
             Form1 = form1;
         }
 
-        Thread thread = new Thread(new ThreadStart(Form1.MainMethod));
-        //thread.IsBackground = true;
-        //thread.Name = "Data Polling Thread";
-        //thread.S Start();
-        //Application.Run();
-
-        //Thread th = new Thread(() =>
-        //{
-        //   while (true)
-        //   {
-        //       //Form1.MainMethod();
-        //   }
-        //}).Start();
-
         
     }
 }
