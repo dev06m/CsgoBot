@@ -33,9 +33,9 @@ namespace CsgoBot
             }
 
             dataGridView1.Visible = true;
-            dataGridView1.Size = new System.Drawing.Size(900, 1400);
-            //dataGridView1.AutoSize = false;
-            dataGridView1.ScrollBars = ScrollBars.Both;
+            dataGridView1.Size = new System.Drawing.Size(1200, 1400);
+            dataGridView1.AutoSize = true;
+            dataGridView1.ScrollBars = ScrollBars.Vertical;
 
             DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
             checkColumn.Name = "Sat";
@@ -158,38 +158,13 @@ namespace CsgoBot
         private void baslat_click(object sender, EventArgs e)
         {
             string path = "https://api.shadowpay.com/api/v2/user/inventory";
-            //Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
-            //List<InventoryItem> inventoryItems = inventory.data.Where(x => x.tradable == true).ToList();
+
             List<Datum> datumList = new List<Datum>();
 
-            //if (inventoryItems == null)
-            //{
-            //    inventoryItems = GenerateInventoryItems();
-            //}   
-
+            // her bir satiri rows degikenine assign ediyoryz
             var rows = dataGridView1.Rows;
-            //DataGridView datagrid = new DataGridView();
 
-            //datagrid.ColumnCount = 6;
-            //datagrid.Columns[0].Name = "Name";
-            //datagrid.Columns[1].Name = "Suggested Price";
-            //datagrid.Columns[2].Name = "Asset Id";
-            //datagrid.Columns[3].Name = "Tradable";
-            //datagrid.Columns[4].Name = "Satis fiyati";
-            //datagrid.Columns[5].Name = "Interval time(in ms)";
-
-            //int index = 0;
-            //foreach (DataGridViewRow row in rows)
-            //{
-            //    if (row.Cells[6].Value != null)
-            //    {
-            //        dataGridView1.Rows.RemoveAt(index);
-            //        ////DataGridViewRow newRow = row;
-            //        //datagrid.Rows.Add(row.Clone());
-            //    }
-            //    index++;
-            //}
-
+            // for dongusunde her bir satiri datum objesine donusturup datumlist listesine ekliyoruz
             foreach (DataGridViewRow row in rows)
             {
                 if (row.Cells[6].Value == null)
@@ -218,19 +193,9 @@ namespace CsgoBot
                 };
                 datumList.Add(datum);
             }
+            // tek bir ya da coklu thread olarak worker_thread metoduyla calistiriyoruz
             Temp.worker_threads(datumList);
 
-            //if (inventory == null)
-            //    return;
-
-            //if (dataGridView1.SelectedCells.Count > 0)
-            //{
-            //    int selectedrowindex = dataGridView1.SelectedCells[0].RowIndex;
-            //    var cell1 = dataGridView1.Rows[selectedrowindex];
-            //    var item = inventoryItems[selectedrowindex];
-            //    DataGridViewRow selectedRow = dataGridView1.Rows[selectedrowindex];
-            //    //string cellValue = Convert.ToString(selectedRow.Cells["enter column name"].Value);
-            //}
         }
         private void CleanRows()
         {
@@ -274,6 +239,11 @@ namespace CsgoBot
         private void button1_Click(object sender, EventArgs e)
         {
             //PostMethods.MakeOffer();
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }

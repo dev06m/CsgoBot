@@ -114,14 +114,12 @@ namespace CsgoBot.Methods
         public async static void SetLowestPrice(Datum item, int miliseconds)
         {
             double suggestedPrice = item.steam_item.suggested_price;
-            double altLimit = 0;
-            //if (suggestedPrice > 4)
-            //    altLimit = suggestedPrice - suggestedPrice * 0.05; // ALT LIMIT AYARLA
-            //else
-                altLimit = suggestedPrice - suggestedPrice * 0.11; // ALT LIMIT AYARLA
+            double? altLimit = 0;
+
+            altLimit = item.determined_price; // ALT LIMIT AYARLANDI
+
             string itemId = item.asset_id.ToString();
 
-            //string itemName = GetMethods.FindNameById(itemId);
             string itemName = item.steam_item.steam_market_hash_name;
             if (itemName != null)
             {
@@ -217,7 +215,7 @@ namespace CsgoBot.Methods
                     {
                         var result = streamReader.ReadToEnd();
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                    Console.WriteLine($"Fiyat setleme basarili... \n");
+                        Console.WriteLine($"Fiyat setleme basarili... \n");
                         return data != null ? data : new MakeOfferResponse();
                     }
                     catch (JsonReaderException)
