@@ -50,48 +50,43 @@ namespace CsgoBot
             //dataGridView1.CellClick += Temp.random_click;
 
             //Kullanıcıya yeni kayıt ekleme izni.
-            dataGridView1.AllowUserToAddRows = true;
+            //dataGridView1.AllowUserToAddRows = true;
 
             //Kullanıcıya kayıt silme izni.
-            dataGridView1.AllowUserToDeleteRows = true;
+            //dataGridView1.AllowUserToDeleteRows = true;
 
             //Veriye tıklandığında satır seçimi sağlama.
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            //dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             //DataGridView sütun oluşturma
             dataGridView1.ColumnCount = 6;
             dataGridView1.Columns[0].Name = "Name";
-            dataGridView1.Columns[1].Name = "Suggested Price";
-            dataGridView1.Columns[2].Name = "Asset Id";
-            dataGridView1.Columns[3].Name = "Tradable";
-            dataGridView1.Columns[4].Name = "Satis fiyati";
+            dataGridView1.Columns[1].Name = "Asset Id";
+            dataGridView1.Columns[2].Name = "Tavsiye fiyat";
+            dataGridView1.Columns[3].Name = "Başlangıc Fiyatı";
+            dataGridView1.Columns[4].Name = "Minimum fiyat";
             dataGridView1.Columns[5].Name = "Interval time(in ms)";
 
+            dataGridView1.Columns[0].Width = 350;
             int count = 1;
-            //var tradeableItems = inventory.data;
+
             var tradableItems = inventory.data.Where(x => x.tradable == true);
-            dataGridView1.Columns.Add(checkColumn);
+            dataGridView1.Columns.Add(checkColumn); // bunun altına dıger butonlar eklenecek
             foreach (var item in tradableItems)
             {
-                //if (dataGridView1.Columns["X"] == null)
-                //{
-                //    dataGridView1.Columns.Add(checkColumn);
-                //}
-
-
                 string[] row = new string[] { item.steam_market_hash_name,
-                                              item.suggested_price.ToString(), item.asset_id,
-                                              item.tradable.ToString()};
+                                              item.asset_id,
+                                              item.suggested_price.ToString()};
                 dataGridView1.Rows.Add(row);
 
                 count++;
             }
 
             //Kullanıcıya yeni kayıt ekleme izni.
-            dataGridView1.AllowUserToAddRows = true;
+            //dataGridView1.AllowUserToAddRows = true;
 
             //Kullanıcıya kayıt silme izni.
-            dataGridView1.AllowUserToDeleteRows = true;
+            //dataGridView1.AllowUserToDeleteRows = true;
 
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -173,11 +168,12 @@ namespace CsgoBot
                 var isTimeIntervalNull = row?.Cells[5].Value == null;
 
                 string itemName = row.Cells[0].Value.ToString();
-                double suggestedPrice = Convert.ToDouble(row.Cells[1].Value.ToString());
-                string assetId = row.Cells[2].Value.ToString();
-                string tradable = row.Cells[3].Value.ToString(); // kullanilmayacak
-                double determined_price = isSuggestedNull ? 10.0 : Convert.ToDouble(row.Cells[4].Value.ToString()); // SUGGESTEC PRICE YENIDEN SETLENMELI
-                int miliseconds = isTimeIntervalNull ? 1000 : Convert.ToInt32(row?.Cells[5]?.Value?.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
+                string assetId = row.Cells[1].Value.ToString();
+                double suggestedPrice = Convert.ToDouble(row.Cells[2].Value.ToString());
+                double baslangicFiyati = row.Cells[2].Value == null ? suggestedPrice : Convert.ToDouble(row.Cells[2].Value.ToString());
+                double minimumFiyat = row.Cells[3].Value == null ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[3].Value.ToString());
+                //double determined_price = isSuggestedNull ? 10.0 : Convert.ToDouble(row.Cells[4].Value.ToString()); // SUGGESTEC PRICE YENIDEN SETLENMELI
+                int miliseconds = row.Cells[4].Value == null ? 1000 : Convert.ToInt32(row.Cells[4].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
                 //...
                 Datum datum = new Datum()
                 {
@@ -188,13 +184,14 @@ namespace CsgoBot
                         
                     },
                     asset_id = assetId,
-                    determined_price = determined_price,
+                    minimum_fiyat = minimumFiyat,
+                    baslangic_fiyati = baslangicFiyati,
                     interval_time = miliseconds
                 };
                 datumList.Add(datum);
             }
             // tek bir ya da coklu thread olarak worker_thread metoduyla calistiriyoruz
-            Temp.worker_threads(datumList);
+            Worker.worker_threads(datumList);
 
         }
         private void CleanRows()

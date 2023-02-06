@@ -82,93 +82,12 @@ namespace CsgoBot.Methods
             return null;
         }
 
-
-        public static Task<HttpResponseMessage> CancelOffer(string itemId)
+        public static async Task<MakeOfferResponse> IlkFiyatSetleme(string asset_id, string price) // ilk kez setlerken
         {
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
-            //var response = string.Empty;
-            var cancelItemIds = new List<int>();
 
-
-            if (itemId != null)
-            {
-                cancelItemIds.Add(Convert.ToInt32(itemId));
-
-            }// null degilse ??
-
-            var cancelList = new Dictionary<string, List<int>>();
-            cancelList.Add("item_ids", cancelItemIds);
-
-
-            
-            var stringContent = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
-            var request = new HttpRequestMessage(HttpMethod.Delete, path + "?token=" + accessToken);
-            request.Content = stringContent;
-            var response = client.SendAsync(request);
-            return response;
-            
-        }
-
-
-        public async static void SetLowestPrice(Datum item, int miliseconds)
-        {
-            double suggestedPrice = item.steam_item.suggested_price;
-            double? altLimit = 0;
-
-            altLimit = item.determined_price; // ALT LIMIT AYARLANDI
-
-            string itemId = item.asset_id.ToString();
-
-            string itemName = item.steam_item.steam_market_hash_name;
-            if (itemName != null)
-            {
-                PriceDatum lowestPriceObject = GetMethods.ItemFiyatGetir(itemName).Result;
-                string lowestPrice = lowestPriceObject != null ? lowestPriceObject.price : Convert.ToString(suggestedPrice);
-
-                double doubleLowestPrice = lowestPrice != null ? double.Parse(lowestPrice, System.Globalization.CultureInfo.InvariantCulture) : suggestedPrice;
-          
-                var myItemPrice = item.price;
-
-                if ((myItemPrice > doubleLowestPrice || myItemPrice == 0) && doubleLowestPrice >= altLimit) // (item fiyati en dusuk fiyattan fazlaysa ya da item fiyati sifirsa) ve en dusuk fiyat alt limitin altinda degilse
-                {
-                    Console.WriteLine($"--Fiyat degisikligi '{item.steam_item.steam_market_hash_name}'-- Item fiyatim: ${myItemPrice}, En dusuk fiyat: ${doubleLowestPrice}");
-                    if (myItemPrice > altLimit)
-                    {
-                        var newPrice = doubleLowestPrice - 0.01;
-                        string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                        
-                        var result = MakeOffer(item, newPriceString, miliseconds);
-                        Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result} \n");
-                        
-                    }
-                    else
-                    {
-                        string suggestedPriceString = suggestedPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                        MakeOffer(item, suggestedPriceString, miliseconds);
-                        Console.WriteLine($"Alt limiti astigi icin tavsiye fiyat ayarlandi.");
-                    }
-                }else
-                {
-                    Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
-                }
-            }
-        }
-
-        public static async Task<MakeOfferResponse> MakeOffer(string asset_id, string price)
-        {
-            MakeOfferResponse itemsResult = GetMethods.GetItemsOnOffers();
-            if (itemsResult == null)
-                return new MakeOfferResponse();
-
-            var item = itemsResult != null ? itemsResult.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
-            string path = "https://api.shadowpay.com/api/v2/user/offers";
-            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
-
-            if (item != null)
-            {
-                var cancelResult = CancelOffer(item.id.ToString());
-            }
+            Datum item = null;
 
             client.DefaultRequestHeaders.Authorization =
            new AuthenticationHeaderValue("Bearer", accessToken);
@@ -184,7 +103,8 @@ namespace CsgoBot.Methods
                 {
                     response = client.PostAsync(path, content).Result;
 
-                } else
+                }
+                else
                 {
                     response = client.PatchAsync(path, content).Result;
                     Thread.Sleep(500);
@@ -235,6 +155,81 @@ namespace CsgoBot.Methods
             return new MakeOfferResponse();
         }
 
+
+
+        public static Task<HttpResponseMessage> CancelOffer(string itemId)
+        {
+            string path = "https://api.shadowpay.com/api/v2/user/offers";
+            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            //var response = string.Empty;
+            var cancelItemIds = new List<int>();
+
+
+            if (itemId != null)
+            {
+                cancelItemIds.Add(Convert.ToInt32(itemId));
+
+            }// null degilse ??
+
+            var cancelList = new Dictionary<string, List<int>>();
+            cancelList.Add("item_ids", cancelItemIds);
+
+
+            
+            var stringContent = new StringContent(JsonConvert.SerializeObject(cancelList), Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Delete, path + "?token=" + accessToken);
+            request.Content = stringContent;
+            var response = client.SendAsync(request);
+            return response;
+            
+        }
+
+
+        public async static void SetLowestPrice(Datum item, int miliseconds)
+        {
+            double suggestedPrice = item.steam_item.suggested_price;
+            double? altLimit = 0;
+
+            altLimit = item.minimum_fiyat; // ALT LIMIT AYARLANDI
+
+            string itemId = item.asset_id.ToString();
+
+            string itemName = item.steam_item.steam_market_hash_name;
+            if (itemName != null)
+            {
+                PriceDatum lowestPriceObject = GetMethods.ItemFiyatGetir(itemName).Result;
+                string lowestPrice = lowestPriceObject != null ? lowestPriceObject.price : Convert.ToString(suggestedPrice);
+
+                double doubleLowestPrice = lowestPrice != null ? double.Parse(lowestPrice, System.Globalization.CultureInfo.InvariantCulture) : suggestedPrice;
+          
+                var myItemPrice = item.price;
+
+                if ((myItemPrice > doubleLowestPrice || myItemPrice == 0) && doubleLowestPrice >= altLimit) // (item fiyati en dusuk fiyattan fazlaysa ya da item fiyati sifirsa) ve en dusuk fiyat alt limitin altinda degilse
+                {
+                    Console.WriteLine($"--Fiyat degisikligi '{item.steam_item.steam_market_hash_name}'-- Item fiyatim: ${myItemPrice}, En dusuk fiyat: ${doubleLowestPrice}");
+                    if (myItemPrice > altLimit)
+                    {
+                        var newPrice = doubleLowestPrice - 0.01;
+                        string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                        
+                        var result = MakeOffer(item, newPriceString, miliseconds);
+                        Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result} \n");
+                        
+                    }
+                    else
+                    {
+                        string suggestedPriceString = suggestedPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                        MakeOffer(item, suggestedPriceString, miliseconds);
+                        Console.WriteLine($"Alt limiti astigi icin tavsiye fiyat ayarlandi.");
+                    }
+                }else
+                {
+                    Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
+                }
+            }
+        }
+
+ 
         private static StringContent ContentProvider(string asset_id, string price, Datum item)
         {
 

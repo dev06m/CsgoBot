@@ -22,7 +22,8 @@ namespace CsgoBot.Models
         public double? price_with_fee { get; set; }
         public string? steamid { get; set; }
         public object? custom_id { get; set; }
-        public double? determined_price { get; set; }
+        public double? baslangic_fiyati { get; set; }
+        public double? minimum_fiyat { get; set; }
         public int interval_time { get; set; }
     }
 
