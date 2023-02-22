@@ -121,6 +121,25 @@ namespace CsgoBot.Methods
             return lowestPriceObject[0];
         }
 
+        public static object SatistakiItemFiyatiGetir(string itemName)
+        {
+            MakeOfferResponse satistakiItemler = GetItemsOnOffers();
+            Datum itemObject = null;
+            try
+            {
+                itemObject =  satistakiItemler.data.FirstOrDefault(x => x.steam_item.steam_market_hash_name == itemName);
+
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine("\n{0}\n", exp.Message);
+            }
+            if(itemObject != null)
+                return itemObject.price;
+
+            return null;
+        }
+
         public static string FindNameById(string id)
         {
             var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";

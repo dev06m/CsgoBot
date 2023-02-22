@@ -27,26 +27,34 @@ namespace CsgoBot
             }
         }
 
-        public static void PriceUpdate(double itemPrice, Datum item, int miliseconds)
+        public static void PriceUpdate(double? minFiyat, Datum item, int miliseconds)
         {
             string itemName = item.steam_item.steam_market_hash_name;
-            var priceStatus = true;
-            itemPrice = item.price;
-            while (priceStatus)
-            {
-                var lowestPrice = GetMethods.ItemFiyatGetir(itemName).Result;
+            bool fiyatDegisikligi = true;
 
-                itemPrice = Convert.ToDouble(GetMethods.ItemFiyatGetir(itemName).Result.price);
-                double doubleLowestPrice = lowestPrice.price != null ? double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) : item.steam_item.suggested_price;
-                if (doubleLowestPrice < itemPrice)
-                    priceStatus = false;
-                Console.WriteLine($"Dongu icinde Fiyat Ayni | {item.steam_item.steam_market_hash_name} - {doubleLowestPrice} | \n");
-            }
             // en dusuk fiyati bul itemi 1 cent altina koy
             if (item != null)
             {
-                PostMethods.SetLowestPrice(item, miliseconds);
+                fiyatDegisikligi = PostMethods.SetLowestPrice(minFiyat, item, miliseconds);
             }
+
+            while (fiyatDegisikligi)
+            {
+                var lowestPrice = GetMethods.ItemFiyatGetir(itemName).Result;
+                double itemPrice = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(itemName));
+                if (itemPrice != null)
+                {
+                    double doubleLowestPrice = lowestPrice.price != null ? double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) : item.steam_item.suggested_price;
+                    if (doubleLowestPrice < itemPrice)
+                        fiyatDegisikligi = false;
+                    Console.WriteLine($"Dongu icinde Fiyat Ayni | {item.steam_item.steam_market_hash_name} - {doubleLowestPrice} | \n");
+                }else
+                {
+                    fiyatDegisikligi = false;
+                }
+                Thread.Sleep(miliseconds);
+            }
+           
             count++;
         }
     }

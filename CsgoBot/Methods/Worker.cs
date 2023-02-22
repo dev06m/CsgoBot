@@ -39,6 +39,7 @@ namespace CsgoBot.Methods
             String baslangicFiyati = item.baslangic_fiyati.ToString();
             String minimumFiyat = item.minimum_fiyat.ToString();
             int count = 1;
+            double? minFiyat = item.minimum_fiyat;
 
             while (dongu)
             {
@@ -61,7 +62,7 @@ namespace CsgoBot.Methods
 
                 if (item != null)  // FIYAT UPDATE YAPMA
                 {
-                    PriceSetMethods.PriceUpdate(itemPrice, item, miliseconds);
+                    PriceSetMethods.PriceUpdate(minFiyat, item, miliseconds); // minimum fiyati parametre olarak gecmeliyiz cunku datum objesini sunucudan cekiyor ve onun icinde min fiyat yok
                 }
                 else // ILK BASTA FIYAT SETLEME
                 {

@@ -185,12 +185,12 @@ namespace CsgoBot.Methods
         }
 
 
-        public async static void SetLowestPrice(Datum item, int miliseconds)
+        public static bool SetLowestPrice(double? minFiyat, Datum item, int miliseconds)
         {
             double suggestedPrice = item.steam_item.suggested_price;
             double? altLimit = 0;
 
-            altLimit = item.minimum_fiyat; // ALT LIMIT AYARLANDI
+            altLimit = minFiyat; // ALT LIMIT AYARLANDI
 
             string itemId = item.asset_id.ToString();
 
@@ -222,11 +222,13 @@ namespace CsgoBot.Methods
                         MakeOffer(item, suggestedPriceString, miliseconds);
                         Console.WriteLine($"Alt limiti astigi icin tavsiye fiyat ayarlandi.");
                     }
+                    return true;
                 }else
                 {
                     Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
                 }
             }
+            return false;
         }
 
  

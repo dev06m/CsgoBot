@@ -25,6 +25,9 @@ namespace CsgoBot.Models
         public string? steamid { get; set; }
         public object? custom_id { get; set; }
         public Settings? settings { get; set; }
+        public double? baslangic_fiyati { get; set; }
+        public double? minimum_fiyat { get; set; }
+        public int interval_time { get; set; }
     }
 
     public class MetadataOffer

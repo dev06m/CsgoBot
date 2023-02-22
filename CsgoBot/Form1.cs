@@ -5,11 +5,13 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using CsgoBot.Methods;
+using System;
 
 namespace CsgoBot
 {
     public partial class Form1 : Form
     {
+        public List<Datum> SeciliItemler = new List<Datum>();
         private static readonly HttpClient client = new HttpClient();
         public Form1()
         {
@@ -43,22 +45,7 @@ namespace CsgoBot
             checkColumn.Width = 65;
             checkColumn.ReadOnly = false;
             checkColumn.FillWeight = 10; //if the datagridview is resized (on form resize) the checkbox won't take up too much; value is relative to the other columns' fill values
-            //itemOpen.Name = "Item";
-            //itemOpen.Text = "Sayi";
-
-            // botu baslatan button
-            //dataGridView1.CellClick += Temp.random_click;
-
-            //Kullanıcıya yeni kayıt ekleme izni.
-            //dataGridView1.AllowUserToAddRows = true;
-
-            //Kullanıcıya kayıt silme izni.
-            //dataGridView1.AllowUserToDeleteRows = true;
-
-            //Veriye tıklandığında satır seçimi sağlama.
-            //dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            //DataGridView sütun oluşturma
+           
             dataGridView1.ColumnCount = 6;
             dataGridView1.Columns[0].Name = "Name";
             dataGridView1.Columns[1].Name = "Asset Id";
@@ -82,12 +69,6 @@ namespace CsgoBot
                 count++;
             }
 
-            //Kullanıcıya yeni kayıt ekleme izni.
-            //dataGridView1.AllowUserToAddRows = true;
-
-            //Kullanıcıya kayıt silme izni.
-            //dataGridView1.AllowUserToDeleteRows = true;
-
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
@@ -96,14 +77,8 @@ namespace CsgoBot
 
         private async void SatisListesiButton(object sender, EventArgs e)
         {
-            ItemsOnOffer res = null;
-            await Task.Run(() =>
-            {
-
-                res = Methods.GetMethods.SatisListesi().Result;
-            });
-
-
+            ItemsOnOffer res = Methods.GetMethods.SatisListesi().Result;
+            
             //tabloyu temizle
             CleanRows();
 
@@ -116,25 +91,42 @@ namespace CsgoBot
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 10;
-            dataGridView1.Columns[0].Name = "ID";
-            dataGridView1.Columns[1].Name = "Name";
-            dataGridView1.Columns[2].Name = "Price";
-            dataGridView1.Columns[3].Name = "Time Created";
-            dataGridView1.Columns[4].Name = "Asset Id";
-            dataGridView1.Columns[5].Name = "State";
-            dataGridView1.Columns[6].Name = "Price with Fee";
-            dataGridView1.Columns[7].Name = "Steam Id";
-            dataGridView1.Columns[8].Name = "Min Price";
-            dataGridView1.Columns[9].Name = "Max Price";
+            dataGridView1.ColumnCount = 7;
+            dataGridView1.Columns[0].Name = "İsim";
+            dataGridView1.Columns[1].Name = "Fiyat";
+            dataGridView1.Columns[2].Name = "Komisyon"; // *
+            dataGridView1.Columns[3].Name = "Komisyon çıkınca Fiyat";
+            dataGridView1.Columns[4].Name = "Baslangıç Fiyatı";
+            dataGridView1.Columns[5].Name = "Minimum Fiyat";
+            dataGridView1.Columns[6].Name = "Interval";
+
+            dataGridView1.Columns[0].Width = 350;
+
+            List<DatumOffer> satistakiItemler = res?.data;
+
+            if (SeciliItemler != null)
+                foreach (var item in SeciliItemler)
+                {
+                    foreach (var satisItem in satistakiItemler)
+                    {
+                        if (item.asset_id.Equals(satisItem.asset_id))
+                        {
+                            satisItem.interval_time = item.interval_time;
+                            satisItem.minimum_fiyat = item.minimum_fiyat;
+                            satisItem.baslangic_fiyati = item.baslangic_fiyati;
+                        }
+                    }
+                }
            
-            foreach (var item in res?.data)
+            foreach (var item in satistakiItemler)
             {
-                string[] row = new string[] { item.id.ToString(), item.steam_item.steam_market_hash_name,
-                                              item.price.ToString(), item.time_created,
-                                              item.asset_id, item.state,
-                                              item.price_with_fee.ToString(), item.steamid, 
-                                              //item.settings.min_price.ToString(), item.settings.max_price.ToString()
+                string[] row = new string[] { item.steam_item.steam_market_hash_name,
+                                              item.price.ToString(), 
+                                              (item.price - item.price_with_fee).ToString(),
+                                              item.price_with_fee.ToString(),
+                                              item.baslangic_fiyati.ToString(), 
+                                              item.minimum_fiyat.ToString(),
+                                              item.interval_time.ToString(), 
                                             };
                 dataGridView1.Rows.Add(row);
             }
@@ -170,10 +162,9 @@ namespace CsgoBot
                 string itemName = row.Cells[0].Value.ToString();
                 string assetId = row.Cells[1].Value.ToString();
                 double suggestedPrice = Convert.ToDouble(row.Cells[2].Value.ToString());
-                double baslangicFiyati = row.Cells[2].Value == null ? suggestedPrice : Convert.ToDouble(row.Cells[2].Value.ToString());
-                double minimumFiyat = row.Cells[3].Value == null ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[3].Value.ToString());
-                //double determined_price = isSuggestedNull ? 10.0 : Convert.ToDouble(row.Cells[4].Value.ToString()); // SUGGESTEC PRICE YENIDEN SETLENMELI
-                int miliseconds = row.Cells[4].Value == null ? 1000 : Convert.ToInt32(row.Cells[4].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
+                double baslangicFiyati = row.Cells[3].Value == null ? suggestedPrice : Convert.ToDouble(row.Cells[3].Value.ToString());
+                double minimumFiyat = row.Cells[4].Value == null ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[4].Value);
+                int miliseconds = row.Cells[5].Value == null ? 1000 : Convert.ToInt32(row.Cells[5].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
                 //...
                 Datum datum = new Datum()
                 {
@@ -189,6 +180,7 @@ namespace CsgoBot
                     interval_time = miliseconds
                 };
                 datumList.Add(datum);
+                SeciliItemler.AddRange(datumList);
             }
             // tek bir ya da coklu thread olarak worker_thread metoduyla calistiriyoruz
             Worker.worker_threads(datumList);
