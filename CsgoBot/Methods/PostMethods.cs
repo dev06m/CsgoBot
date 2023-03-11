@@ -1,7 +1,9 @@
-﻿using CsgoBot.Models;
+﻿using CsgoBot.Assets;
+using CsgoBot.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
@@ -19,7 +21,7 @@ namespace CsgoBot.Methods
         {
 
             string path = "https://api.shadowpay.com/api/v2/user/offers";
-            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            var accessToken = Isimlendirmeler.ACCESS_TOKEN;
             price = price.Replace(",", ".");
 
             var offersList = new List<OfferUpdate>
@@ -82,15 +84,14 @@ namespace CsgoBot.Methods
             return null;
         }
 
-        public static async Task<MakeOfferResponse> IlkFiyatSetleme(string asset_id, string price) // ilk kez setlerken
+        public static bool IlkFiyatSetleme(string asset_id, string price) // ilk kez setlerken
         {
             string path = "https://api.shadowpay.com/api/v2/user/offers";
-            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            var accessToken = Isimlendirmeler.ACCESS_TOKEN;
 
             Datum item = null;
 
-            client.DefaultRequestHeaders.Authorization =
-           new AuthenticationHeaderValue("Bearer", accessToken);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
             StringContent content = ContentProvider(asset_id, price, item);
 
@@ -99,17 +100,7 @@ namespace CsgoBot.Methods
             {
                 int count = 0;
                 HttpResponseMessage response = null;
-                if (item == null)
-                {
-                    response = client.PostAsync(path, content).Result;
-
-                }
-                else
-                {
-                    response = client.PatchAsync(path, content).Result;
-                    Thread.Sleep(500);
-                }
-
+                response = client.PostAsync(path, content).Result;
                 response.EnsureSuccessStatusCode();
 
                 if (response.ReasonPhrase == "Unprocessable Entity")
@@ -135,12 +126,16 @@ namespace CsgoBot.Methods
                     {
                         var result = streamReader.ReadToEnd();
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                        Console.WriteLine($"Fiyat setleme basarili... \n");
-                        return data != null ? data : new MakeOfferResponse();
+                        if (data.status == "error")
+                        {
+                            Console.WriteLine($"Fiyat setleme başarısız!! error : {result}\n");
+                            return false;
+                        }
+                        Console.WriteLine($"Fiyat setleme başarılı... \n");
                     }
                     catch (JsonReaderException)
                     {
-                        Console.WriteLine("Gecersiz JSON.");
+                        Console.WriteLine("Geçersiz JSON.");
                     }
                     catch (Exception e)
                     {
@@ -152,7 +147,7 @@ namespace CsgoBot.Methods
                     Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
                 }
             }
-            return new MakeOfferResponse();
+            return true;
         }
 
 
@@ -160,7 +155,7 @@ namespace CsgoBot.Methods
         public static Task<HttpResponseMessage> CancelOffer(string itemId)
         {
             string path = "https://api.shadowpay.com/api/v2/user/offers";
-            var accessToken = "5694e257ec0dc1ca476024eb5f15ded7";
+            var accessToken = Isimlendirmeler.ACCESS_TOKEN;
             //var response = string.Empty;
             var cancelItemIds = new List<int>();
 
@@ -180,6 +175,22 @@ namespace CsgoBot.Methods
             var request = new HttpRequestMessage(HttpMethod.Delete, path + "?token=" + accessToken);
             request.Content = stringContent;
             var response = client.SendAsync(request);
+
+            //var threadId = Thread.CurrentThread.ManagedThreadId;
+            ////int threadId = 0xFF;
+
+            //Process currentProcess = Process.GetCurrentProcess();
+
+            //foreach (System.Diagnostics.ProcessThread thread in currentProcess.Threads)
+            //{
+            //    var a = thread.Id;
+            //    if (thread.Id == threadId)
+            //    {
+            //        // We found you thread! And abort it.
+            //        //thread. Abort();
+            //    }
+            //}
+
             return response;
             
         }
@@ -197,10 +208,10 @@ namespace CsgoBot.Methods
             string itemName = item.steam_item.steam_market_hash_name;
             if (itemName != null)
             {
-                PriceDatum lowestPriceObject = GetMethods.ItemFiyatGetir(itemName).Result;
-                string lowestPrice = lowestPriceObject != null ? lowestPriceObject.price : Convert.ToString(suggestedPrice);
+                double lowestPriceObject = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
+                string lowestPrice = lowestPriceObject != null ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
 
-                double doubleLowestPrice = lowestPrice != null ? double.Parse(lowestPrice, System.Globalization.CultureInfo.InvariantCulture) : suggestedPrice;
+                double doubleLowestPrice = lowestPrice != null ?lowestPriceObject : suggestedPrice;
           
                 var myItemPrice = item.price;
 

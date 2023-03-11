@@ -1,6 +1,7 @@
 ﻿using CsgoBot.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace CsgoBot.Methods
     {
         static int count = 0;
         static Thread workerThread1, workerThread2, workerThread3, workerThread4, workerThread5, workerThread6, workerThread7, workerThread8, workerThread9, workerThread10;
-        public static async void worker_threads(List<Datum> datums)
+        public static void worker_threads(List<Datum> datums)
         {
             ItemForm itemForm = new ItemForm();
 
@@ -31,8 +32,9 @@ namespace CsgoBot.Methods
 
         public static void Hile(Datum item)
         {
+            //Datum myItem = item;
             bool dongu = true;
-
+            
             int miliseconds = item.interval_time;
             var asset_id = item.asset_id;
             var suggestedPriceString = item.steam_item.suggested_price.ToString(); // buraya bak
@@ -41,33 +43,38 @@ namespace CsgoBot.Methods
             int count = 1;
             double? minFiyat = item.minimum_fiyat;
 
+            var threadId = Thread.CurrentThread.ManagedThreadId; // silinecek eger ise yaramiyorsa
+            item.thread_id = threadId;
+            
             while (dongu)
             {
+                bool fiyat_kontrol_dongusu = false;
                 int getIdCount = 0;
                 MakeOfferResponse result = null;
 
-                // id null gelirse 5 defa dene hala null geliyorsa else'de make offer yapiyoruz
-                //while (getIdCount < 5)
-                //{
-                //    result = GetMethods.GetItemsOnOffers();
-                //    if (result.data != null)
-                //        if (result.data.Count > 0) 
-                //            getIdCount = 5;
-                //    getIdCount++;
-                //}
                 result = GetMethods.GetItemsOnOffers();
                 // item satista mi?
-                item = result.data != null ? result.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
+                Datum myItem = result.data != null ? result.data.FirstOrDefault(x => x.asset_id == asset_id) : null;
                 double itemPrice = 0;
 
-                if (item != null)  // FIYAT UPDATE YAPMA
+                if (myItem == null)  // ILK BASTA FIYAT SETLEME 
                 {
-                    PriceSetMethods.PriceUpdate(minFiyat, item, miliseconds); // minimum fiyati parametre olarak gecmeliyiz cunku datum objesini sunucudan cekiyor ve onun icinde min fiyat yok
+                    fiyat_kontrol_dongusu = FiyatSetlemeMetodlari.FirstPriceSet(item, baslangicFiyati, minimumFiyat, asset_id);
                 }
-                else // ILK BASTA FIYAT SETLEME
+                else // FIYAT UPDATE YAPMA
                 {
-                    PriceSetMethods.FirstPriceSet(item, baslangicFiyati, minimumFiyat, asset_id);
+                    fiyat_kontrol_dongusu = FiyatSetlemeMetodlari.FiyatGuncelle(minFiyat, item, miliseconds); // minimum fiyati parametre olarak gecmeliyiz cunku datum objesini sunucudan cekiyor ve onun icinde min fiyat yok
                 }
+
+                // FIYAT DEGISIKLIGI VAR MI?
+                while(fiyat_kontrol_dongusu)
+                {
+                    if (!GetMethods.FiyatDegisikligiCheck())
+                        fiyat_kontrol_dongusu = false;
+
+                }
+
+
                 if (count % 100 == 0)
                     Console.WriteLine($"Request number: {count}");
                 count++;

@@ -25,6 +25,7 @@ namespace CsgoBot.Models
         public double? baslangic_fiyati { get; set; }
         public double? minimum_fiyat { get; set; }
         public int interval_time { get; set; }
+        public int thread_id { get; set; }
     }
 
     public class MakeOfferResponse

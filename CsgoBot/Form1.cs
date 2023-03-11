@@ -6,6 +6,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using CsgoBot.Methods;
 using System;
+using System.Security;
+using System.ComponentModel;
+using CsgoBot.Assets;
 
 namespace CsgoBot
 {
@@ -23,11 +26,14 @@ namespace CsgoBot
         {
             //tabloyu temizle
             CleanRows();
-            
+
             Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
 
-            if (inventory.data == null)
+            if (inventory == null)
+            {
+                Console.WriteLine("Envanter bos geliyor");
                 return;
+            }
 
             if (inventory.data.Count < 1)
             {
@@ -39,35 +45,47 @@ namespace CsgoBot
             dataGridView1.AutoSize = true;
             dataGridView1.ScrollBars = ScrollBars.Vertical;
 
+          
+
             DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
             checkColumn.Name = "Sat";
             checkColumn.HeaderText = "Sat";
             checkColumn.Width = 65;
             checkColumn.ReadOnly = false;
             checkColumn.FillWeight = 10; //if the datagridview is resized (on form resize) the checkbox won't take up too much; value is relative to the other columns' fill values
-           
-            dataGridView1.ColumnCount = 6;
-            dataGridView1.Columns[0].Name = "Name";
-            dataGridView1.Columns[1].Name = "Asset Id";
-            dataGridView1.Columns[2].Name = "Tavsiye fiyat";
-            dataGridView1.Columns[3].Name = "Başlangıc Fiyatı";
-            dataGridView1.Columns[4].Name = "Minimum fiyat";
-            dataGridView1.Columns[5].Name = "Interval time(in ms)";
 
-            dataGridView1.Columns[0].Width = 350;
+            dataGridView1.ColumnCount = 9;
+            dataGridView1.Columns[KolonIsimleri.AD].Name = "İsim";
+            dataGridView1.Columns[KolonIsimleri.ASSET_ID].Name = "Asset Id";
+            dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Name = "Tavsiye fiyat";
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Name = "Site Satış Fiyatı";
+            dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI].Name = "Başlangıc Fiyatı";
+            dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT].Name = "Minimum fiyat";
+            dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Name = "Fiyat Kontrol Araligi(in ms)";
+
+            dataGridView1.Columns[KolonIsimleri.AD].Width = 350;
             int count = 1;
 
             var tradableItems = inventory.data.Where(x => x.tradable == true);
             dataGridView1.Columns.Add(checkColumn); // bunun altına dıger butonlar eklenecek
+
+            var itemFiyatlari = GetMethods.TumItemFiyatlariniGetir();
+
             foreach (var item in tradableItems)
             {
+                //var itemName = GetMethods.ItemFiyatGetir(item.steam_market_hash_name);
                 string[] row = new string[] { item.steam_market_hash_name,
                                               item.asset_id,
-                                              item.suggested_price.ToString()};
+                                              item.suggested_price.ToString(),
+                                              itemFiyatlari != null ?
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name).price :
+                                              "İtem Fiyatı Bulunamadı"};
                 dataGridView1.Rows.Add(row);
 
                 count++;
             }
+
+            dataGridView1.Sort(dataGridView1.Columns["Tavsiye fiyat"], ListSortDirection.Ascending);
 
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -75,30 +93,58 @@ namespace CsgoBot
 
 
 
-        private async void SatisListesiButton(object sender, EventArgs e)
+        private void SatisListesiButton(object sender, EventArgs e)
         {
-            ItemsOnOffer res = Methods.GetMethods.SatisListesi().Result;
+            ItemsOnOffer res = new ItemsOnOffer();
+            try
+            {
+                    res = Methods.GetMethods.SatisListesi().Result;
+
+            }
+            catch (Exception exp)
+            {
+                Console.WriteLine(exp.Message);
+                return;
+            }
             
             //tabloyu temizle
             CleanRows();
 
             dataGridView1.Visible = true;
             dataGridView1.ScrollBars = ScrollBars.Both;
-            dataGridView1.Size = new System.Drawing.Size(1200, 800);
+            dataGridView1.Size = new System.Drawing.Size(1800, 1000);
 
+            DataGridViewButtonColumn cancelItem = new DataGridViewButtonColumn();
+            cancelItem.Name = "Satis_Iptal_Et";
+            cancelItem.Text = "X";
+            int columnIndex = 2;
+
+            DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
+            checkColumn.Name = "Sat";
+            checkColumn.HeaderText = "Sat";
+            checkColumn.Width = 65;
+            checkColumn.ReadOnly = false;
+            checkColumn.FillWeight = 10;
 
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
             //DataGridView sütun oluşturma
-            dataGridView1.ColumnCount = 7;
-            dataGridView1.Columns[0].Name = "İsim";
-            dataGridView1.Columns[1].Name = "Fiyat";
-            dataGridView1.Columns[2].Name = "Komisyon"; // *
-            dataGridView1.Columns[3].Name = "Komisyon çıkınca Fiyat";
-            dataGridView1.Columns[4].Name = "Baslangıç Fiyatı";
-            dataGridView1.Columns[5].Name = "Minimum Fiyat";
-            dataGridView1.Columns[6].Name = "Interval";
+            dataGridView1.ColumnCount = 8;
+
+            dataGridView1.Columns[KolonIsimleri.AD].Name = "İsim";
+            dataGridView1.Columns[KolonIsimleri.ASSET_ID].Name = "Asset Id";
+            dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Name = "Tavsiye fiyat";
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Name = "Site Satış Fiyatı";
+            dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI].Name = "Başlangıc Fiyatı";
+            dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT].Name = "Minimum fiyat";
+            dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Name = "Fiyat Kontrol Araligi(in ms)";
+            dataGridView1.Columns[KolonIsimleri.ITEM_ID].Name = "ITEM ID";
+
+            dataGridView1.Columns.Insert(KolonIsimleri.SATIS_IPTAL_ET, cancelItem);
+
+            // check box
+            dataGridView1.Columns.Add(checkColumn);
 
             dataGridView1.Columns[0].Width = 350;
 
@@ -117,17 +163,33 @@ namespace CsgoBot
                         }
                     }
                 }
-           
+
+
+            var itemFiyatlari = GetMethods.TumItemFiyatlariniGetir();
+
             foreach (var item in satistakiItemler)
             {
-                string[] row = new string[] { item.steam_item.steam_market_hash_name,
-                                              item.price.ToString(), 
-                                              (item.price - item.price_with_fee).ToString(),
-                                              item.price_with_fee.ToString(),
-                                              item.baslangic_fiyati.ToString(), 
+                string[] row = new string[] {
+                                              item.steam_item.steam_market_hash_name,
+                                              item.asset_id,
+                                              item.steam_item.suggested_price.ToString(),
+                                               itemFiyatlari != null ?
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_item.steam_market_hash_name).price :
+                                              "İtem Fiyatı Bulunamadı",
+
+                                              item.baslangic_fiyati.ToString(),
                                               item.minimum_fiyat.ToString(),
-                                              item.interval_time.ToString(), 
-                                            };
+                                              item.interval_time.ToString(),
+                                              item.id.ToString()
+                //item.steam_item.steam_market_hash_name,
+                //item.price.ToString(),
+                //(item.price - item.price_with_fee).ToString(),
+                //item.price_with_fee.ToString(),
+                //item.baslangic_fiyati.ToString(),
+                //item.minimum_fiyat.ToString(),
+                //item.interval_time.ToString(),
+                //item.id.ToString()
+            };
                 dataGridView1.Rows.Add(row);
             }
 
@@ -154,24 +216,26 @@ namespace CsgoBot
             // for dongusunde her bir satiri datum objesine donusturup datumlist listesine ekliyoruz
             foreach (DataGridViewRow row in rows)
             {
-                if (row.Cells[6].Value == null)
+                if (row.Cells[KolonIsimleri.CHECK_BOX].Value == null)
                     continue; 
-                var isSuggestedNull = row.Cells[4].Value == null;
-                var isTimeIntervalNull = row?.Cells[5].Value == null;
 
-                string itemName = row.Cells[0].Value.ToString();
-                string assetId = row.Cells[1].Value.ToString();
-                double suggestedPrice = Convert.ToDouble(row.Cells[2].Value.ToString());
-                double baslangicFiyati = row.Cells[3].Value == null ? suggestedPrice : Convert.ToDouble(row.Cells[3].Value.ToString());
-                double minimumFiyat = row.Cells[4].Value == null ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[4].Value);
-                int miliseconds = row.Cells[5].Value == null ? 1000 : Convert.ToInt32(row.Cells[5].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
+
+                string itemName = row.Cells[KolonIsimleri.AD].Value.ToString();
+                string assetId = row.Cells[KolonIsimleri.ASSET_ID].Value.ToString();
+                double tavsiyeFiyat = Convert.ToDouble(row.Cells[KolonIsimleri.TAVSIYE_FIYAT].Value.ToString());
+                double baslangicFiyati = (row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == null
+                    || row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == "") ? tavsiyeFiyat : Convert.ToDouble(row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value.ToString());
+                double minimumFiyat = (row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == null 
+                    || row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == "") ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value);
+                int miliseconds = (row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == null
+                    || row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == "0") ? 2000 : Convert.ToInt32(row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
                 //...
                 Datum datum = new Datum()
                 {
                     steam_item = new SteamItem ()
                     {
                         steam_market_hash_name = itemName,
-                        suggested_price = suggestedPrice,
+                        suggested_price = tavsiyeFiyat,
                         
                     },
                     asset_id = assetId,
@@ -185,6 +249,8 @@ namespace CsgoBot
             // tek bir ya da coklu thread olarak worker_thread metoduyla calistiriyoruz
             Worker.worker_threads(datumList);
 
+            GenerateInventoryItems();
+
         }
         private void CleanRows()
         {
@@ -193,6 +259,37 @@ namespace CsgoBot
             dataGridView1.Refresh();
         }
 
+        private void CancelItem(object sender, DataGridViewCellEventArgs e)
+        {
+            // buton disinda bir yere tiklanirsa gec
+            if (e.ColumnIndex != 8)
+                return;
+            // envanteri goster ekraninda tiklanirsa gec
+            if (!dataGridView1.Columns.Contains("Satis_Iptal_Et"))
+                return;
+
+            String itemId = null;
+            var index = dataGridView1.Columns["Satis_Iptal_Et"].Index;
+            if (e.ColumnIndex == dataGridView1.Columns["Satis_Iptal_Et"].Index)
+            {
+                var rows = dataGridView1.Rows;
+                foreach (DataGridViewRow row in rows)
+                {
+                    var a = row.Cells["Satis_Iptal_Et"].RowIndex;
+                    var b = e.RowIndex;
+                    if (row.Cells["Satis_Iptal_Et"].RowIndex == e.RowIndex) // BURA CALISMIYOR
+                    {
+                        Console.WriteLine("HEYYYYY");
+                        itemId = row.Cells["ITEM ID"].Value.ToString();
+                    }
+
+                }
+                if (itemId != null)
+                    PostMethods.CancelOffer(itemId);
+                //Do something with your button.
+               
+            }
+        }
 
         private List<InventoryItem> GenerateInventoryItems()
         {

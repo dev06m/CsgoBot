@@ -9,44 +9,56 @@ using System.Threading.Tasks;
 
 namespace CsgoBot
 {
-    static class PriceSetMethods
+    static class FiyatSetlemeMetodlari
     {
 
         static int count = 0;
-        public static void FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id)
+        public static bool FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id)
         {
-            Console.WriteLine($"Item ilk kez satisa konuyor, fiyat setleniyor... --  {item?.steam_item?.steam_market_hash_name}\n");
+            if (item == null)
+            {
+                Console.WriteLine("İtem null gelyior\n");
+                return false;
+            }
             try
             {
+                Console.WriteLine($"Item satışa konuyor \"{item?.steam_item?.steam_market_hash_name}\"...\n");
+
                 var offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati);
+                return offerResult;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                //throw;
             }
+            return true;
         }
 
-        public static void PriceUpdate(double? minFiyat, Datum item, int miliseconds)
+        public static bool FiyatGuncelle(double? minFiyat, Datum item, int miliseconds)
         {
+            if (item == null)
+                return false;
+
             string itemName = item.steam_item.steam_market_hash_name;
             bool fiyatDegisikligi = true;
 
-            // en dusuk fiyati bul itemi 1 cent altina koy
-            if (item != null)
-            {
-                fiyatDegisikligi = PostMethods.SetLowestPrice(minFiyat, item, miliseconds);
-            }
+            bool result = true;
+
+
+            fiyatDegisikligi = PostMethods.SetLowestPrice(minFiyat, item, miliseconds);
 
             while (fiyatDegisikligi)
             {
-                var lowestPrice = GetMethods.ItemFiyatGetir(itemName).Result;
+                var lowestPrice = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
                 double itemPrice = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(itemName));
-                if (itemPrice != null)
+                if (itemPrice != null && itemPrice != 0)
                 {
-                    double doubleLowestPrice = lowestPrice.price != null ? double.Parse(lowestPrice.price, System.Globalization.CultureInfo.InvariantCulture) : item.steam_item.suggested_price;
+                    double doubleLowestPrice = lowestPrice != null ? lowestPrice : item.steam_item.suggested_price;
                     if (doubleLowestPrice < itemPrice)
+                    {
                         fiyatDegisikligi = false;
+                        result = true;
+                    }
                     Console.WriteLine($"Dongu icinde Fiyat Ayni | {item.steam_item.steam_market_hash_name} - {doubleLowestPrice} | \n");
                 }else
                 {
@@ -56,6 +68,7 @@ namespace CsgoBot
             }
            
             count++;
+            return result;
         }
     }
 }
