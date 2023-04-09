@@ -23,6 +23,7 @@ namespace CsgoBot.Methods
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
             price = price.Replace(",", ".");
+            price = price == "0" ? item.steam_item.suggested_price.ToString() : price;  
 
             var offersList = new List<OfferUpdate>
             {
@@ -42,19 +43,19 @@ namespace CsgoBot.Methods
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", accessToken);
 
-            //Eger varsa item satisini iptal et
-            //Thread.Sleep(miliseconds);
-            //if (item != null)
-            //{
-            //    var cancelResult = CancelOffer(item.id.ToString());
-            //}
-
             var retry = true;
             
             while (retry)
             {
-                Thread.Sleep(miliseconds);
-                var response = client.PatchAsync(path, stringContent).Result;
+                var response = new HttpResponseMessage();
+                try
+                {
+                    response = client.PatchAsync(path, stringContent).Result;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"hata var!!!!! {e.Message}\n");
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -84,7 +85,7 @@ namespace CsgoBot.Methods
             return null;
         }
 
-        public static bool IlkFiyatSetleme(string asset_id, string price) // ilk kez setlerken
+        public static String IlkFiyatSetleme(string asset_id, string price) // "E" "H" "satildi"
         {
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
@@ -126,10 +127,17 @@ namespace CsgoBot.Methods
                     {
                         var result = streamReader.ReadToEnd();
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                        if (data.status == "error")
+                        if (data.error_message == "inventory_items_mismatch")
+                        {
+                            Console.WriteLine("İtme bulunamadı, satıldı ya da başka hata var.");
+                            return "satildi";
+                        }
+                        if (data.status == "error" && data.error_message == "user_got_autoban")
                         {
                             Console.WriteLine($"Fiyat setleme başarısız!! error : {result}\n");
-                            return false;
+                            if (data.error_message == "user_got_autoban")
+                                Thread.Sleep(3600000);
+                            return "H";
                         }
                         Console.WriteLine($"Fiyat setleme başarılı... \n");
                     }
@@ -147,7 +155,7 @@ namespace CsgoBot.Methods
                     Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
                 }
             }
-            return true;
+            return "E";
         }
 
 
@@ -158,7 +166,7 @@ namespace CsgoBot.Methods
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
             //var response = string.Empty;
             var cancelItemIds = new List<int>();
-
+            
 
             if (itemId != null)
             {
@@ -196,51 +204,51 @@ namespace CsgoBot.Methods
         }
 
 
-        public static bool SetLowestPrice(double? minFiyat, Datum item, int miliseconds)
-        {
-            double suggestedPrice = item.steam_item.suggested_price;
-            double? altLimit = 0;
+        //public static bool SetLowestPrice(double? minFiyat, Datum item, int miliseconds)
+        //{
+        //    double suggestedPrice = item.steam_item.suggested_price;
+        //    double? altLimit = 0;
 
-            altLimit = minFiyat; // ALT LIMIT AYARLANDI
+        //    altLimit = minFiyat; // ALT LIMIT AYARLANDI
 
-            string itemId = item.asset_id.ToString();
+        //    string itemId = item.asset_id.ToString();
 
-            string itemName = item.steam_item.steam_market_hash_name;
-            if (itemName != null)
-            {
-                double lowestPriceObject = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
-                string lowestPrice = lowestPriceObject != null ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
+        //    string itemName = item.steam_item.steam_market_hash_name;
+        //    if (itemName != null)
+        //    {
+        //        double lowestPriceObject = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
+        //        string lowestPrice = lowestPriceObject != null ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
 
-                double doubleLowestPrice = lowestPrice != null ?lowestPriceObject : suggestedPrice;
+        //        double doubleLowestPrice = lowestPrice != null ?lowestPriceObject : suggestedPrice;
           
-                var myItemPrice = item.price;
+        //        var myItemPrice = item.price;
 
-                if ((myItemPrice > doubleLowestPrice || myItemPrice == 0) && doubleLowestPrice >= altLimit) // (item fiyati en dusuk fiyattan fazlaysa ya da item fiyati sifirsa) ve en dusuk fiyat alt limitin altinda degilse
-                {
-                    Console.WriteLine($"--Fiyat degisikligi '{item.steam_item.steam_market_hash_name}'-- Item fiyatim: ${myItemPrice}, En dusuk fiyat: ${doubleLowestPrice}");
-                    if (myItemPrice > altLimit)
-                    {
-                        var newPrice = doubleLowestPrice - 0.01;
-                        string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        //        if ((myItemPrice > doubleLowestPrice || myItemPrice == 0) && doubleLowestPrice >= altLimit) // (item fiyati en dusuk fiyattan fazlaysa ya da item fiyati sifirsa) ve en dusuk fiyat alt limitin altinda degilse
+        //        {
+        //            Console.WriteLine($"--Fiyat degisikligi '{item.steam_item.steam_market_hash_name}'-- Item fiyatim: ${myItemPrice}, En dusuk fiyat: ${doubleLowestPrice}");
+        //            if (myItemPrice > altLimit)
+        //            {
+        //                var newPrice = doubleLowestPrice - 0.01;
+        //                string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
                         
-                        var result = MakeOffer(item, newPriceString, miliseconds);
-                        Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result} \n");
+        //                var result = MakeOffer(item, newPriceString, miliseconds);
+        //                Console.WriteLine($"Item fiyati degisti, yeni fiyat: {newPriceString} ---------- {result} \n");
                         
-                    }
-                    else
-                    {
-                        string suggestedPriceString = suggestedPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-                        MakeOffer(item, suggestedPriceString, miliseconds);
-                        Console.WriteLine($"Alt limiti astigi icin tavsiye fiyat ayarlandi.");
-                    }
-                    return true;
-                }else
-                {
-                    Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
-                }
-            }
-            return false;
-        }
+        //            }
+        //            else
+        //            {
+        //                string suggestedPriceString = suggestedPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        //                MakeOffer(item, suggestedPriceString, miliseconds);
+        //                Console.WriteLine($"Alt limiti astigi icin tavsiye fiyat ayarlandi.");
+        //            }
+        //            return true;
+        //        }else
+        //        {
+        //            Console.WriteLine($"Fiyat degisikligi olmadi. -- {itemName} -- \n");
+        //        }
+        //    }
+        //    return false;
+        //}
 
  
         private static StringContent ContentProvider(string asset_id, string price, Datum item)

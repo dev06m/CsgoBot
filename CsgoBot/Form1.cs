@@ -64,7 +64,13 @@ namespace CsgoBot
             dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Name = "Fiyat Kontrol Araligi(in ms)";
 
             dataGridView1.Columns[KolonIsimleri.AD].Width = 350;
+            dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI].Width = 100;
+            dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT].Width = 100;
             int count = 1;
+
+            // sort by column
+            dataGridView1.Sort(dataGridView1.Columns["Tavsiye fiyat"], ListSortDirection.Descending);
+
 
             var tradableItems = inventory.data.Where(x => x.tradable == true);
             dataGridView1.Columns.Add(checkColumn); // bunun altına dıger butonlar eklenecek
@@ -78,15 +84,14 @@ namespace CsgoBot
                                               item.asset_id,
                                               item.suggested_price.ToString(),
                                               itemFiyatlari != null ?
-                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name).price :
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name)?.price :
                                               "İtem Fiyatı Bulunamadı"};
                 dataGridView1.Rows.Add(row);
 
                 count++;
             }
 
-            dataGridView1.Sort(dataGridView1.Columns["Tavsiye fiyat"], ListSortDirection.Ascending);
-
+          
             //Veriye tıklandığında satır seçimi sağlama.
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
@@ -135,11 +140,18 @@ namespace CsgoBot
             dataGridView1.Columns[KolonIsimleri.AD].Name = "İsim";
             dataGridView1.Columns[KolonIsimleri.ASSET_ID].Name = "Asset Id";
             dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Name = "Tavsiye fiyat";
-            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Name = "Site Satış Fiyatı";
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Name = "Site F. - Kendi F.";
             dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI].Name = "Başlangıc Fiyatı";
             dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT].Name = "Minimum fiyat";
-            dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Name = "Fiyat Kontrol Araligi(in ms)";
+            dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Name = "Kontrol Aralığı";
             dataGridView1.Columns[KolonIsimleri.ITEM_ID].Name = "ITEM ID";
+
+            dataGridView1.Columns[KolonIsimleri.AD].Width = 350;
+            dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Width = 80;
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Width = 120;
+            dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI_SATIS_LISTESI].Width = 80;
+            dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT_SATIS_LISTESI].Width = 80;
+            dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Width = 85;
 
             dataGridView1.Columns.Insert(KolonIsimleri.SATIS_IPTAL_ET, cancelItem);
 
@@ -174,7 +186,7 @@ namespace CsgoBot
                                               item.asset_id,
                                               item.steam_item.suggested_price.ToString(),
                                                itemFiyatlari != null ?
-                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_item.steam_market_hash_name).price :
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_item.steam_market_hash_name).price  + "  -  " + item.price:
                                               "İtem Fiyatı Bulunamadı",
 
                                               item.baslangic_fiyati.ToString(),

@@ -13,62 +13,62 @@ namespace CsgoBot
     {
 
         static int count = 0;
-        public static bool FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id)
+        public static String FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id) // return --> "E" "H" "satildi"
         {
             if (item == null)
             {
-                Console.WriteLine("İtem null gelyior\n");
-                return false;
+                Console.WriteLine("İtem null geliyor\n");
+                return "H";
             }
             try
             {
-                Console.WriteLine($"Item satışa konuyor \"{item?.steam_item?.steam_market_hash_name}\"...\n");
+                Console.WriteLine($"Item satışa koymayi deniyor.. __{item?.steam_item?.steam_market_hash_name}__\n");
 
                 var offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati);
+                if (offerResult == "E")
+                    Console.WriteLine($"Item ilk kez satisa kondu __{item?.steam_item?.steam_market_hash_name}__\n");
                 return offerResult;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                return "H";
             }
-            return true;
+            return "E";
         }
 
         public static bool FiyatGuncelle(double? minFiyat, Datum item, int miliseconds)
         {
-            if (item == null)
-                return false;
-
+            double suggestedPrice = item.steam_item.suggested_price;
+            double? altLimit = minFiyat; 
+            string itemId = item.asset_id.ToString();
             string itemName = item.steam_item.steam_market_hash_name;
-            bool fiyatDegisikligi = true;
+            double lowestPriceObject = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
+            string lowestPrice = lowestPriceObject != null ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
+            double doubleLowestPrice = lowestPrice != null ? lowestPriceObject : suggestedPrice;
 
-            bool result = true;
+            var myItemPrice = item.price;
 
-
-            fiyatDegisikligi = PostMethods.SetLowestPrice(minFiyat, item, miliseconds);
-
-            while (fiyatDegisikligi)
+            var newPrice = doubleLowestPrice - 0.01;
+            string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+            if (newPrice < altLimit)
             {
-                var lowestPrice = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
-                double itemPrice = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(itemName));
-                if (itemPrice != null && itemPrice != 0)
-                {
-                    double doubleLowestPrice = lowestPrice != null ? lowestPrice : item.steam_item.suggested_price;
-                    if (doubleLowestPrice < itemPrice)
-                    {
-                        fiyatDegisikligi = false;
-                        result = true;
-                    }
-                    Console.WriteLine($"Dongu icinde Fiyat Ayni | {item.steam_item.steam_market_hash_name} - {doubleLowestPrice} | \n");
-                }else
-                {
-                    fiyatDegisikligi = false;
-                }
-                Thread.Sleep(miliseconds);
+                Console.WriteLine($"Alt limite takıldı, fiyat başlangıc fiyatına setlenecek __{itemName}__\n");
+                var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
+                return false;
             }
-           
-            count++;
-            return result;
+            if ((myItemPrice < doubleLowestPrice || myItemPrice == 0)) 
+            {
+                Console.WriteLine($"İtem en düşük fiyat ya da fiyatı sıfır __{itemName}__\n");
+                return false;
+            }
+            var result = PostMethods.MakeOffer(item, newPriceString, miliseconds);
+            if(result.status == "success") {
+                Console.WriteLine($"İtem fiyati degisti, yeni fiyat: {newPriceString} eski fiyat: {doubleLowestPrice} __{itemName}__ \n");
+                return true;
+            };
+            return false;
+
         }
     }
 }

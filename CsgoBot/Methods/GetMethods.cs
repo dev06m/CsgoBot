@@ -13,6 +13,7 @@ namespace CsgoBot.Methods
     {
 
         private static readonly HttpClient client = new HttpClient();
+        private static int bir_saat_bekle = 0;
 
         public static Inventory GetInventory()
         {
@@ -46,7 +47,7 @@ namespace CsgoBot.Methods
 
         public static MakeOfferResponse GetItemsOnOffers()
         {
-            string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?"  + Isimlendirmeler.ACCESS_TOKEN + "\"";
+            string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?token="  + Isimlendirmeler.ACCESS_TOKEN;
             MakeOfferResponse inventory = null;
             try
             {
@@ -105,7 +106,7 @@ namespace CsgoBot.Methods
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
                 var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                //JObject json = JObject.Parse(content);
+                //JObject json = JObject.Parse(content);s
                 prices = System.Text.Json.JsonSerializer.Deserialize<PriceRoot>(content).data;
                 PriceDatum item = prices.FirstOrDefault(x => x.steam_market_hash_name == itemName);
                 if (item == null)
@@ -194,33 +195,44 @@ namespace CsgoBot.Methods
             }
         }
 
-        public static bool FiyatDegisikligiCheck()
+        public static bool FiyatDegisikligiCheck(Datum item)
         {
-            var accessToken = Isimlendirmeler.ACCESS_TOKEN;
-            string itemListPath = "https://api.shadowpay.com/api/v2/user/offers" + "?token=" + accessToken;
+            bool dongu = true;
+            int sabitlenecek_zaman = 300000;
 
-            try
+            var shadowEnDusukFiyat = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
+            double itemFiyati = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name));
+            if (itemFiyati == null || itemFiyati == 0)
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(@itemListPath);
-                request.ContentType = "application/json";
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                var content = new StreamReader(response.GetResponseStream()).ReadToEnd();
-                //JObject json = JObject.Parse(content);
-                var item = System.Text.Json.JsonSerializer.Deserialize<Offers>(content);
-                if (item?.data.Count == 0)
-                {
-                    return;
-                }
-                // yoksa null cevirir ve uygulama patlar
-                return item.data[0].id.ToString(); // degisecek, isme gore bulunabilir olabir
+                Console.WriteLine("KEPÇE KULAK");
+                dongu = false;
             }
-            catch (Exception exp)
+
+            shadowEnDusukFiyat = shadowEnDusukFiyat != null ? shadowEnDusukFiyat : item.steam_item.suggested_price;
+            if (shadowEnDusukFiyat < itemFiyati)
             {
-
-                throw exp;
+                Console.WriteLine("Sitede daha düşük fiyatlı item tespit edildi, fiyr güncleleniyor.\n");
+                dongu = false;
+                item.bir_saat_bekle = 0;
             }
+            else if (shadowEnDusukFiyat == itemFiyati)
+            {
+                Console.WriteLine($"İtem fiyatı sitedeki en düşük fiyata eşit - {item.bir_saat_bekle+1}. deneme. __{item.steam_item.steam_market_hash_name}__\n");
+                item.bir_saat_bekle = item.bir_saat_bekle + 1;
+            }
+            if(item.bir_saat_bekle == 100)
+            {
+                Console.WriteLine($"100 kez fiyat kontrolü yapıldı, fiyat {sabitlenecek_zaman / (1000 * 60)} dk süresince sabitlenecek .");
+                Thread.Sleep(sabitlenecek_zaman); // bir süre sabit fiyatla bekle
+                Console.WriteLine($"{sabitlenecek_zaman / (1000*60)} dk beklendi, fiyat {item.baslangic_fiyati} $'a setlenecek, sonra güncellenecek.");
+                PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), item.interval_time); // bir süre bekledikten sonra başlangıc fiyatına setle ve donguden çıkarak fiyatı tekrar setlgüncelle.
+                dongu = false;
+                item.bir_saat_bekle = 0;
+            }
+            return dongu;
         }
+
+        
 
     }
 }

@@ -26,6 +26,7 @@ namespace CsgoBot.Models
         public double? minimum_fiyat { get; set; }
         public int interval_time { get; set; }
         public int thread_id { get; set; }
+        public int bir_saat_bekle = 0;
     }
 
     public class MakeOfferResponse
@@ -33,6 +34,7 @@ namespace CsgoBot.Models
         public List<Datum>? data { get; set; }
         public MetadataCancel? metadata { get; set; }
         public string? status { get; set; }
+        public String error_message { get; set; }
     }
 
     public class SteamItem
