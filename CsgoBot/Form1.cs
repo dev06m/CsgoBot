@@ -120,8 +120,13 @@ namespace CsgoBot
             dataGridView1.Size = new System.Drawing.Size(1800, 1000);
 
             DataGridViewButtonColumn cancelItem = new DataGridViewButtonColumn();
-            cancelItem.Name = "Satis_Iptal_Et";
+            DataGridViewButtonColumn itemiGuncelle = new DataGridViewButtonColumn();
+            
+            cancelItem.Name = Isimlendirmeler.SATIS_IPTAL;
             cancelItem.Text = "X";
+
+            itemiGuncelle.Name = "Satış Güncelle";
+
             int columnIndex = 2;
 
             DataGridViewCheckBoxColumn checkColumn = new DataGridViewCheckBoxColumn();
@@ -154,6 +159,7 @@ namespace CsgoBot
             dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Width = 85;
 
             dataGridView1.Columns.Insert(KolonIsimleri.SATIS_IPTAL_ET, cancelItem);
+            //dataGridView1.Columns.Insert(KolonIsimleri.SATIS_GUNCELLE, itemiGuncelle);
 
             // check box
             dataGridView1.Columns.Add(checkColumn);
@@ -162,7 +168,7 @@ namespace CsgoBot
 
             List<DatumOffer> satistakiItemler = res?.data;
 
-            if (SeciliItemler != null)
+            if (SeciliItemler != null) // buraya bida bak
                 foreach (var item in SeciliItemler)
                 {
                     foreach (var satisItem in satistakiItemler)
@@ -277,19 +283,19 @@ namespace CsgoBot
             if (e.ColumnIndex != 8)
                 return;
             // envanteri goster ekraninda tiklanirsa gec
-            if (!dataGridView1.Columns.Contains("Satis_Iptal_Et"))
+            if (!dataGridView1.Columns.Contains(Isimlendirmeler.SATIS_IPTAL))
                 return;
 
             String itemId = null;
-            var index = dataGridView1.Columns["Satis_Iptal_Et"].Index;
-            if (e.ColumnIndex == dataGridView1.Columns["Satis_Iptal_Et"].Index)
+            var index = dataGridView1.Columns[Isimlendirmeler.SATIS_IPTAL].Index;
+            if (e.ColumnIndex == dataGridView1.Columns[Isimlendirmeler.SATIS_IPTAL].Index)
             {
                 var rows = dataGridView1.Rows;
                 foreach (DataGridViewRow row in rows)
                 {
-                    var a = row.Cells["Satis_Iptal_Et"].RowIndex;
+                    var a = row.Cells[Isimlendirmeler.SATIS_IPTAL].RowIndex;
                     var b = e.RowIndex;
-                    if (row.Cells["Satis_Iptal_Et"].RowIndex == e.RowIndex) // BURA CALISMIYOR
+                    if (row.Cells[Isimlendirmeler.SATIS_IPTAL].RowIndex == e.RowIndex) // burada itemin id sini buluyoruz bir seyi setleyerek fiayt check dongusunun bitmesini saglamamiz gerekiyor
                     {
                         Console.WriteLine("HEYYYYY");
                         itemId = row.Cells["ITEM ID"].Value.ToString();
@@ -301,6 +307,41 @@ namespace CsgoBot
                 //Do something with your button.
                
             }
+        }
+
+        private void ItemiGuncelle(object sender, DataGridViewCellEventArgs e)
+        {
+            
+            // buton disinda bir yere tiklanirsa gec
+            if (e.ColumnIndex != 9)
+                return;
+            // envanteri goster ekraninda tiklanirsa gec
+            if (!dataGridView1.Columns.Contains("Satış Güncelle"))
+                return;
+            /*
+            String itemId = null;
+            var index = dataGridView1.Columns["Satis_Iptal_Et"].Index;
+            if (e.ColumnIndex == dataGridView1.Columns["Satis_Iptal_Et"].Index)
+            {
+                var rows = dataGridView1.Rows;
+                foreach (DataGridViewRow row in rows)
+                {
+                    var a = row.Cells["Satis_Iptal_Et"].RowIndex;
+                    var b = e.RowIndex;
+                    if (row.Cells["Satis_Iptal_Et"].RowIndex == e.RowIndex) // burada itemin id sini buluyoruz bir seyi setleyerek fiayt check dongusunun bitmesini saglamamiz gerekiyor
+                    {
+                        Console.WriteLine("HEYYYYY");
+                        itemId = row.Cells["ITEM ID"].Value.ToString();
+                    }
+
+                }
+                if (itemId != null)
+                    PostMethods.CancelOffer(itemId);
+                //Do something with your button.
+
+            }
+            */
+            Console.WriteLine("uzgun surat");
         }
 
         private List<InventoryItem> GenerateInventoryItems()
@@ -336,7 +377,14 @@ namespace CsgoBot
 
         private void button1_Click(object sender, EventArgs e)
         {
-            //PostMethods.MakeOffer();
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append($"{DateTime.Now.ToString("h:mm:ss tt")}\n");
+
+            String filePath = "C:\\Users\\mdeveci\\Desktop\\BOT\\";
+            // flush every 20 seconds as you do it
+            File.AppendAllText(filePath + "log.txt", sb.ToString());
+            sb.Clear();
         }
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)

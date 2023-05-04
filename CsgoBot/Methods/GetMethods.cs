@@ -198,26 +198,27 @@ namespace CsgoBot.Methods
         public static bool FiyatDegisikligiCheck(Datum item)
         {
             bool dongu = true;
-            int sabitlenecek_zaman = 300000;
+            int sabitlenecek_zaman = Isimlendirmeler.SABITLENECEK_ZAMAN;
 
             var shadowEnDusukFiyat = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
             double itemFiyati = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name));
             if (itemFiyati == null || itemFiyati == 0)
             {
-                Console.WriteLine("KEPÇE KULAK");
-                dongu = false;
+                Console.WriteLine("İtem fiyatı null ya da 0");
+                //dongu = false;
             }
 
             shadowEnDusukFiyat = shadowEnDusukFiyat != null ? shadowEnDusukFiyat : item.steam_item.suggested_price;
             if (shadowEnDusukFiyat < itemFiyati)
             {
-                Console.WriteLine("Sitede daha düşük fiyatlı item tespit edildi, fiyr güncleleniyor.\n");
+                Console.WriteLine($"DÜŞÜK FİYATLI item tespit edildi, fiyat güncleleniyor. ({item.steam_item.steam_market_hash_name})\n");
                 dongu = false;
                 item.bir_saat_bekle = 0;
             }
             else if (shadowEnDusukFiyat == itemFiyati)
             {
-                Console.WriteLine($"İtem fiyatı sitedeki en düşük fiyata eşit - {item.bir_saat_bekle+1}. deneme. __{item.steam_item.steam_market_hash_name}__\n");
+                if(item.bir_saat_bekle + 1 % 5 == 0)
+                    Console.WriteLine($"İtem fiyatı sitedeki en düşük fiyata eşit - {item.bir_saat_bekle+1}. deneme. __{item.steam_item.steam_market_hash_name}__\n");
                 item.bir_saat_bekle = item.bir_saat_bekle + 1;
             }
             if(item.bir_saat_bekle == 100)

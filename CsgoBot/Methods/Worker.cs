@@ -100,6 +100,14 @@ namespace CsgoBot.Methods
                     Console.WriteLine($"Request number: {count}");
                 count++;
             }
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append($"{DateTime.Now.ToString("h:mm:ss tt")} Thread durduruldu. (${item.steam_item.steam_market_hash_name})\n");
+
+            String filePath = "C:\\Users\\mdeveci\\Desktop\\BOT";            
+            // flush every 20 seconds as you do it
+            File.AppendAllText(filePath + "log.txt", sb.ToString());
+            sb.Clear();
         }
     }
 }

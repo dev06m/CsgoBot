@@ -51,10 +51,15 @@ namespace CsgoBot
 
             var newPrice = doubleLowestPrice - 0.01;
             string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+            int compare_count = 0;
             if (newPrice < altLimit)
             {
-                Console.WriteLine($"Alt limite takıldı, fiyat başlangıc fiyatına setlenecek __{itemName}__\n");
-                var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
+                compare_count++;
+                Console.WriteLine($"Alt limite takıldı, fiyat 20. denemede ({compare_count}) başlangıc fiyatına setlenecek __{itemName}__\n");
+                if (compare_count == 20)
+                {
+                    var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
+                }
                 return false;
             }
             if ((myItemPrice < doubleLowestPrice || myItemPrice == 0)) 

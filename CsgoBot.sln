@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsgoBot", "CsgoBot\CsgoBot.csproj", "{D7F53309-BCC1-4605-8AE9-1CE3436CC401}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CsgoBot", "CsgoBot\CsgoBot.csproj", "{D7F53309-BCC1-4605-8AE9-1CE3436CC401}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A86E2ED-ACE7-4F06-B9CC-D463BE2A670C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DMarket-Bot", "DMarket-Bot\DMarket-Bot.csproj", "{027E7896-49A3-4DC8-9316-DC5F9EFF3772}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +19,10 @@ Global
 		{D7F53309-BCC1-4605-8AE9-1CE3436CC401}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7F53309-BCC1-4605-8AE9-1CE3436CC401}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7F53309-BCC1-4605-8AE9-1CE3436CC401}.Release|Any CPU.Build.0 = Release|Any CPU
+		{027E7896-49A3-4DC8-9316-DC5F9EFF3772}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{027E7896-49A3-4DC8-9316-DC5F9EFF3772}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{027E7896-49A3-4DC8-9316-DC5F9EFF3772}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{027E7896-49A3-4DC8-9316-DC5F9EFF3772}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

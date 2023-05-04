@@ -25,6 +25,8 @@ namespace CsgoBot.Assets
         public static int FIYAT_KONTROL_ARALIGI_SATIS_LISTESI = 6;
         public static int ITEM_ID = 7;
         public static int SATIS_IPTAL_ET = 8;
+        public static int SATIS_GUNCELLE = 9;
 
     }
+
 }
