@@ -18,7 +18,7 @@ namespace CsgoBot
             if (item == null)
             {
                 Console.WriteLine("İtem null geliyor\n");
-                return "H";
+                return "E";
             }
             try
             {
@@ -32,7 +32,7 @@ namespace CsgoBot
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return "H";
+                return "E";
             }
             return "E";
         }
@@ -51,14 +51,17 @@ namespace CsgoBot
 
             var newPrice = doubleLowestPrice - 0.01;
             string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
-            int compare_count = 0;
             if (newPrice < altLimit)
             {
-                compare_count++;
-                Console.WriteLine($"Alt limite takıldı, fiyat 20. denemede ({compare_count}) başlangıc fiyatına setlenecek __{itemName}__\n");
-                if (compare_count == 20)
+                item.alt_limit++;
+                Console.WriteLine($"Alt limite takıldı, fiyat 20. denemede ({item.alt_limit}) başlangıc fiyatına setlenecek __{itemName}__\n");
+                if (item.alt_limit == 20)
                 {
                     var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
+                    Console.WriteLine($"Alt limite takıldığı için başlangıç fiyatına setlendi, 3dk uykuya geçiyor...  ({itemName})\n");
+                    Thread.Sleep(180000);
+                    Console.WriteLine($"Uyandı yarış devam ediyor...  ({itemName})\n");
+                    item.alt_limit = 0;
                 }
                 return false;
             }

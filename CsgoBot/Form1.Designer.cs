@@ -31,7 +31,6 @@
             this.GetInventoryItems = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.SatisListesiBtn = new System.Windows.Forms.Button();
-            this.baslat = new System.Windows.Forms.Button();
             this.makeOffer = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
@@ -55,6 +54,8 @@
             this.dataGridView1.RowTemplate.Height = 29;
             this.dataGridView1.Size = new System.Drawing.Size(937, 340);
             this.dataGridView1.TabIndex = 5;
+            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.baslat_click);
+            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.CancelItem);
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // SatisListesiBtn
@@ -66,16 +67,6 @@
             this.SatisListesiBtn.Text = "Satış Listesi";
             this.SatisListesiBtn.UseVisualStyleBackColor = true;
             this.SatisListesiBtn.Click += new System.EventHandler(this.SatisListesiButton);
-            // 
-            // baslat
-            // 
-            this.baslat.Location = new System.Drawing.Point(241, 49);
-            this.baslat.Name = "baslat";
-            this.baslat.Size = new System.Drawing.Size(120, 119);
-            this.baslat.TabIndex = 18;
-            this.baslat.Text = "Başlat";
-            this.baslat.UseVisualStyleBackColor = true;
-            this.baslat.Click += new System.EventHandler(this.baslat_click);
             // 
             // makeOffer
             // 
@@ -93,16 +84,14 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 753);
             this.Controls.Add(this.makeOffer);
-            this.Controls.Add(this.baslat);
             this.Controls.Add(this.SatisListesiBtn);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.GetInventoryItems);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
-
-            this.dataGridView1.CellClick += new DataGridViewCellEventHandler(this.CancelItem);
 
         }
 
@@ -113,7 +102,7 @@
         private Button SatisListesiBtn;
         private TextBox satisIdText;
         private Button button2;
-        private Button baslat;
+        //private Button baslat;
         private Button makeOffer;
     }
 }

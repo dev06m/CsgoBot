@@ -10,6 +10,8 @@ namespace CsgoBot.Methods
 {
     internal class Worker
     {
+        public static bool dongu = true;
+        public static bool fiyat_kontrol_dongusu = false;
         static int count = 0;
         static Thread workerThread1, workerThread2, workerThread3, workerThread4, workerThread5, workerThread6, workerThread7, workerThread8, workerThread9, workerThread10;
         public static void worker_threads(List<Datum> datums)
@@ -34,7 +36,7 @@ namespace CsgoBot.Methods
         {
             Datum selectedItem = item;
             //Datum myItem = item;
-            bool dongu = true;
+            dongu = true;
             
             int intervalTime = item.interval_time;
             var asset_id = item.asset_id;
@@ -50,7 +52,7 @@ namespace CsgoBot.Methods
             
             while (dongu)
             {
-                bool fiyat_kontrol_dongusu = false;
+                fiyat_kontrol_dongusu = false;
                 int getIdCount = 0;
                 MakeOfferResponse result = null;
 
@@ -69,7 +71,7 @@ namespace CsgoBot.Methods
 
                     if (ilk_setleme_sonuc == "satildi")
                     {
-                        dongu = false;
+                        //dongu = false;
                         return;
                     }
                     Thread.Sleep(intervalTime);
@@ -108,6 +110,7 @@ namespace CsgoBot.Methods
             // flush every 20 seconds as you do it
             File.AppendAllText(filePath + "log.txt", sb.ToString());
             sb.Clear();
+            Console.WriteLine($"Thread kapatılıyor... ({item.steam_item.steam_market_hash_name})");
         }
     }
 }

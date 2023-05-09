@@ -28,6 +28,10 @@ namespace CsgoBot.Models
         public double? baslangic_fiyati { get; set; }
         public double? minimum_fiyat { get; set; }
         public int interval_time { get; set; }
+
+        public int thread_id { get; set; }
+        public int bir_saat_bekle = 0;
+        public int alt_limit = 0;
     }
 
     public class MetadataOffer

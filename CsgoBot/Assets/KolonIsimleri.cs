@@ -15,7 +15,7 @@ namespace CsgoBot.Assets
         public static int BASLANGIC_FIYATI = 4;
         public static int MINIMUM_FIYAT = 5;
         public static int FIYAT_KONTROL_ARALIGI = 6;
-        public static int CHECK_BOX = 9;
+        public static int BASLAT = 9;
 
         public static int FIYAT = 1;
         public static int KOMISYON = 2;

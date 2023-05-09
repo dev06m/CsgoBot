@@ -217,7 +217,7 @@ namespace CsgoBot.Methods
             }
             else if (shadowEnDusukFiyat == itemFiyati)
             {
-                if(item.bir_saat_bekle + 1 % 5 == 0)
+                //if(item.bir_saat_bekle + 1 % 5 == 0)
                     Console.WriteLine($"İtem fiyatı sitedeki en düşük fiyata eşit - {item.bir_saat_bekle+1}. deneme. __{item.steam_item.steam_market_hash_name}__\n");
                 item.bir_saat_bekle = item.bir_saat_bekle + 1;
             }
