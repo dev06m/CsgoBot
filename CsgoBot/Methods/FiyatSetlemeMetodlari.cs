@@ -54,15 +54,10 @@ namespace CsgoBot
             if (newPrice < altLimit)
             {
                 item.alt_limit++;
-                Console.WriteLine($"Alt limite takıldı, fiyat 20. denemede ({item.alt_limit}) başlangıc fiyatına setlenecek __{itemName}__\n");
-                if (item.alt_limit == 20)
-                {
-                    var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
-                    Console.WriteLine($"Alt limite takıldığı için başlangıç fiyatına setlendi, 3dk uykuya geçiyor...  ({itemName})\n");
-                    Thread.Sleep(180000);
-                    Console.WriteLine($"Uyandı yarış devam ediyor...  ({itemName})\n");
-                    item.alt_limit = 0;
-                }
+                Console.WriteLine("Alt limite takıldı, 1 dk bekleme başladı__\n");
+                Thread.Sleep(60000);
+                Console.WriteLine($"1 dk bekleme bitt, başlangıc fiyatına setlenecek __{itemName}__\n ");
+                var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);
                 return false;
             }
             if ((myItemPrice < doubleLowestPrice || myItemPrice == 0)) 

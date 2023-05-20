@@ -275,17 +275,24 @@ namespace CsgoBot
             //    if (row.Cells[KolonIsimleri.BASLAT].Value == null)
             //        continue; 
 
-
             string itemName = row.Cells[KolonIsimleri.AD].Value.ToString();
-                string assetId = row.Cells[KolonIsimleri.ASSET_ID].Value.ToString();
-                double tavsiyeFiyat = Convert.ToDouble(row.Cells[KolonIsimleri.TAVSIYE_FIYAT].Value.ToString());
-                double baslangicFiyati = (row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == null
-                    || row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == "") ? tavsiyeFiyat : Convert.ToDouble(row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value.ToString());
-                double minimumFiyat = (row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == null 
-                    || row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == "") ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value);
-                int miliseconds = (row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == null
-                    || row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == "0") ? 2000 : Convert.ToInt32(row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
-                //...
+            string assetId = row.Cells[KolonIsimleri.ASSET_ID].Value.ToString();
+            double tavsiyeFiyat = Convert.ToDouble(row.Cells[KolonIsimleri.TAVSIYE_FIYAT].Value.ToString());
+            double baslangicFiyati = (row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == null
+                || row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value == "") ? tavsiyeFiyat : Convert.ToDouble(row.Cells[KolonIsimleri.BASLANGIC_FIYATI].Value.ToString());
+            double minimumFiyat = (row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == null 
+                || row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value == "") ? baslangicFiyati - (baslangicFiyati * 0.07) : Convert.ToDouble(row.Cells[KolonIsimleri.MINIMUM_FIYAT].Value);
+            int miliseconds = (row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == null
+                || row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == "0") ? 2000 : Convert.ToInt32(row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
+                                                                                                                                                                           //...
+            Datum seciliItem = SeciliItemler.Where(x => x.steam_item.steam_market_hash_name == itemName).FirstOrDefault();
+            if (seciliItem != null)
+            {
+                seciliItem.baslangic_fiyati = baslangicFiyati;
+                seciliItem.minimum_fiyat = minimumFiyat;
+                seciliItem.interval_time = miliseconds;
+            }
+
                 Datum datum = new Datum()
                 {
                     steam_item = new SteamItem ()
@@ -308,7 +315,8 @@ namespace CsgoBot
             //GenerateInventoryItems();
 
             EkranButonlar.CleanRows(dataGridView1);
-            EkranButonlar.SatisListesiButton(dataGridView1, SeciliItemler);
+            Thread.Sleep(1000);
+            EkranButonlar.EnvanteriGoster(dataGridView1, SeciliItemler);
         }
      
         private void CancelItem(object sender, DataGridViewCellEventArgs e)
@@ -347,7 +355,8 @@ namespace CsgoBot
             Worker.fiyat_kontrol_dongusu = false;
 
             EkranButonlar.CleanRows(dataGridView1);
-            EkranButonlar.EnvanteriGoster(dataGridView1, SeciliItemler);
+            Thread.Sleep(1000);
+            EkranButonlar.SatisListesiButton(dataGridView1, SeciliItemler);
 
 
         }
