@@ -11,6 +11,7 @@ namespace CsgoBot.Methods
     internal class Worker
     {
         public static bool dongu = true;
+        public static int itemId;
         public static bool fiyat_kontrol_dongusu = false;
         static int count = 0;
         static Thread workerThread1, workerThread2, workerThread3, workerThread4, workerThread5, workerThread6, workerThread7, workerThread8, workerThread9, workerThread10;

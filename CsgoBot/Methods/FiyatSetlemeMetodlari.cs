@@ -54,7 +54,7 @@ namespace CsgoBot
             if (newPrice < altLimit)
             {
                 item.alt_limit++;
-                Console.WriteLine("Alt limite takıldı, 1 dk bekleme başladı__\n");
+                Console.WriteLine($"Alt limite takıldı, 1 dk bekleme başladı__{itemName}__\n");
                 Thread.Sleep(60000);
                 Console.WriteLine($"1 dk bekleme bitt, başlangıc fiyatına setlenecek __{itemName}__\n ");
                 var result_ = PostMethods.MakeOffer(item, item.baslangic_fiyati.ToString(), miliseconds);

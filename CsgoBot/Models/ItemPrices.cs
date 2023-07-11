@@ -10,7 +10,8 @@ namespace CsgoBot.Models
     {
         public string? steam_market_hash_name { get; set; }
         public string? price { get; set; }
-        public string? volume { get; set; }
+        public int? volume { get; set; }
+        public String? phase { get; set; }
     }
 
     public class PriceRoot

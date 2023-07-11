@@ -139,6 +139,7 @@ namespace CsgoBot.Methods
                                 Thread.Sleep(3600000);
                             return "H";
                         }
+                        //Worker.itemId = data.data[0].id;
                         Console.WriteLine($"Fiyat setleme başarılı... \n");
                     }
                     catch (JsonReaderException)
