@@ -32,7 +32,7 @@ namespace CsgoBot.Methods
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"Line 35(GetMethids.cs) {e.Message}\n");
             }
             if (response == null)
                 return null;
@@ -63,8 +63,7 @@ namespace CsgoBot.Methods
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                //throw;
+                Console.WriteLine($"Line 66(GetMethids.cs) {e.Message}\n");
             }
             if (inventory != null)
             {
@@ -116,8 +115,7 @@ namespace CsgoBot.Methods
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                //throw;
+                Console.WriteLine($"Line 118(GetMethods.cs) {e.Message}\n");
             }
 
             return lowestPrice;
@@ -143,7 +141,7 @@ namespace CsgoBot.Methods
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine($"Line 144(GetMethods.cs) {e.Message}\n");
                 //throw;
             }
 
@@ -161,7 +159,8 @@ namespace CsgoBot.Methods
             }
             catch (Exception exp)
             {
-                Console.WriteLine("\n{0}\n", exp.Message);
+                //Console.WriteLine(@"\n{0}\n", exp.Message);
+                Console.WriteLine($"Line163 {exp.Message}\n");
             }
             if(itemObject != null)
                 return itemObject.price;

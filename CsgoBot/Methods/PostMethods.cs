@@ -85,8 +85,9 @@ namespace CsgoBot.Methods
             return null;
         }
 
-        public static String IlkFiyatSetleme(string asset_id, string price) // "E" "H" "satildi"
+        public static String IlkFiyatSetleme(string asset_id, string price, string item_name) // "E" "H" "satildi"
         {
+            Console.WriteLine($"İlk fiyat setleme başlıyor {item_name}");
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
 
@@ -97,25 +98,25 @@ namespace CsgoBot.Methods
             StringContent content = ContentProvider(asset_id, price, item);
 
             var retry = true;
-            while (retry)
-            {
+            //while (retry)
+            //{
                 int count = 0;
                 HttpResponseMessage response = null;
                 response = client.PostAsync(path, content).Result;
                 response.EnsureSuccessStatusCode();
 
-                if (response.ReasonPhrase == "Unprocessable Entity")
-                {
-                    Console.WriteLine("Unprocessable Entity hatasi olustu, post istegi tekrar gonderiliyor... \n");
-                    if (count < 5)
-                    {
-                        Console.WriteLine($"{count + 1}. deneme. \n");
-                        count++;
-                        continue;
-                    }
-                    retry = false;
-                    Console.WriteLine($"Post denemeleri basarisiz oldu... \n");
-                }
+                //if (response.ReasonPhrase == "Unprocessable Entity")
+                //{
+                //    Console.WriteLine("Unprocessable Entity hatasi olustu, post istegi tekrar gonderiliyor... \n");
+                //    //if (count < 5)
+                //    //{
+                //    //    Console.WriteLine($"{count + 1}. deneme. \n");
+                //    //    count++;
+                //    //    //continue;
+                //    //}
+                //    retry = false;
+                //    Console.WriteLine($"Post denemeleri basarisiz oldu... \n");
+                //}
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -155,7 +156,7 @@ namespace CsgoBot.Methods
                 {
                     Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
                 }
-            }
+            //}
             return "E";
         }
 
@@ -167,7 +168,7 @@ namespace CsgoBot.Methods
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
             //var response = string.Empty;
             var cancelItemIds = new List<int>();
-            
+             
 
             if (itemId != null)
             {
@@ -256,7 +257,8 @@ namespace CsgoBot.Methods
         {
 
             List<Offer> offersList = null;
-            price = price.Replace(",", ".");
+            if(price.Contains(","))
+                price = price.Replace(",", ".");
             //double double_price = double.Parse(price, System.Globalization.CultureInfo.InvariantCulture);
 
             if (item == null)

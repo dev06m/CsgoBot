@@ -24,15 +24,15 @@ namespace CsgoBot
             {
                 Console.WriteLine($"Item satışa koymayi deniyor.. __{item?.steam_item?.steam_market_hash_name}__\n");
 
-                var offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati);
+                var offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati, item.steam_item.steam_market_hash_name);
                 if (offerResult == "E")
                     Console.WriteLine($"Item ilk kez satisa kondu __{item?.steam_item?.steam_market_hash_name}__\n");
                 return offerResult;
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                return "E";
+                Console.WriteLine($"SatIşa koyma başarısız, error {e.Message}");
+                return "H";
             }
             return "E";
         }
@@ -43,11 +43,19 @@ namespace CsgoBot
             double? altLimit = minFiyat; 
             string itemId = item.asset_id.ToString();
             string itemName = item.steam_item.steam_market_hash_name;
-            double lowestPriceObject = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
-            string lowestPrice = lowestPriceObject != null ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
-            double doubleLowestPrice = lowestPrice != null ? lowestPriceObject : suggestedPrice;
+            double doubleLowestPrice = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
+            //string lowestPrice = lowestPriceObject != 0 ? lowestPriceObject.ToString() : Convert.ToString(suggestedPrice);
+            //double doubleLowestPrice = lowestPrice != null ? lowestPriceObject : suggestedPrice;
+
+            if (doubleLowestPrice == 0)
+            {
+                Console.WriteLine("LOWEST PRICE 0 geliyor.\n");
+                return false;
+            }
 
             var myItemPrice = item.price;
+            if (myItemPrice == 0)
+                Console.WriteLine("İtem fiyatı sıfır __{itemName}__\n");
 
             var newPrice = doubleLowestPrice - 0.01;
             string newPriceString = newPrice.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
@@ -62,7 +70,8 @@ namespace CsgoBot
             }
             if ((myItemPrice < doubleLowestPrice || myItemPrice == 0)) 
             {
-                Console.WriteLine($"İtem en düşük fiyat ya da fiyatı sıfır __{itemName}__\n");
+                Console.WriteLine($"İtem en düşük fiyat __{itemName}__\n");
+                Thread.Sleep(item.interval_time); /* fiyat check dongusune girmeyecegi icin burada beklenityoruz */
                 return false;
             }
             var result = PostMethods.MakeOffer(item, newPriceString, miliseconds);

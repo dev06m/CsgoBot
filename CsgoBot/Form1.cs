@@ -9,6 +9,7 @@ using System;
 using System.Security;
 using System.ComponentModel;
 using CsgoBot.Assets;
+using System.Collections.Generic;
 
 namespace CsgoBot
 {
@@ -26,7 +27,8 @@ namespace CsgoBot
         {
             CleanRows(dataGridView1);
 
-            Inventory inventory = CsgoBot.Methods.GetMethods.GetInventory();
+            Inventory inventory_model = CsgoBot.Methods.GetMethods.GetInventory();
+            List<InventoryItem> inventory = DistinctList(inventory_model?.data);
 
             if (inventory == null)
             {
@@ -34,7 +36,7 @@ namespace CsgoBot
                 return;
             }
 
-            if (inventory.data.Count < 1)
+            if (inventory.Count < 1)
             {
                 Console.WriteLine("Envanter BOS GELIYORR!!!!!");
                 //inventory.data = Generate();
@@ -64,7 +66,9 @@ namespace CsgoBot
             dataGridView1.Columns[KolonIsimleri.AD].Width = 350;
             dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI].Width = 100;
             dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT].Width = 100;
-
+            dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Width = 60;
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Width = 60;
+            
             dataGridView1.Columns.Insert(9, baslat_click);
 
             int count = 1;
@@ -73,7 +77,7 @@ namespace CsgoBot
             dataGridView1.Sort(dataGridView1.Columns["Tavsiye fiyat"], ListSortDirection.Descending);
 
 
-            var tradableItems = inventory.data.Where(x => x.tradable == true);
+            var tradableItems = inventory.Where(x => x.tradable == true);
             //dataGridView1.Columns.Add(checkColumn); // bunun altına dıger butonlar eklenecek
 
             var itemFiyatlari = GetMethods.TumItemFiyatlariniGetir();
@@ -171,6 +175,8 @@ namespace CsgoBot
             dataGridView1.Columns[KolonIsimleri.BASLANGIC_FIYATI_SATIS_LISTESI].Width = 80;
             dataGridView1.Columns[KolonIsimleri.MINIMUM_FIYAT_SATIS_LISTESI].Width = 80;
             dataGridView1.Columns[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Width = 85;
+            dataGridView1.Columns[KolonIsimleri.TAVSIYE_FIYAT].Width = 60;
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].Width = 120;
 
             dataGridView1.Columns.Insert(8, baslat_click);
             dataGridView1.Columns.Insert(KolonIsimleri.SATIS_IPTAL_ET, cancelItem);
@@ -225,6 +231,8 @@ namespace CsgoBot
             if (!dataGridView1.Columns.Contains(Isimlendirmeler.BASLAT)) // Başlat
                 return;
 
+            Console.WriteLine($"Task başladı: {dataGridView1.Rows[e.RowIndex].Cells[KolonIsimleri.AD].Value.ToString()}\n");
+
             string path = "https://api.shadowpay.com/api/v2/user/inventory";
 
             List<Datum> datumList = new List<Datum>();
@@ -250,12 +258,16 @@ namespace CsgoBot
             int miliseconds = (row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == null
                 || row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value == "0") ? 2000 : Convert.ToInt32(row.Cells[KolonIsimleri.FIYAT_KONTROL_ARALIGI].Value.ToString()); // INTERVAL0 YENIDEN SETLENMELI;
                                                                                                                                                                            //...
-            Datum seciliItem = SeciliItemler.Where(x => x.steam_item.steam_market_hash_name == itemName).FirstOrDefault();
+            List<Datum> seciliItem = SeciliItemler.Where(x => x.steam_item.steam_market_hash_name == itemName).ToList();
             if (seciliItem != null)
             {
-                seciliItem.baslangic_fiyati = baslangicFiyati;
-                seciliItem.minimum_fiyat = minimumFiyat;
-                seciliItem.interval_time = miliseconds;
+                foreach (var item in seciliItem)
+                {
+                    item.baslangic_fiyati = baslangicFiyati;
+                    item.minimum_fiyat = minimumFiyat;
+                    item.interval_time = miliseconds;
+
+                }
             }
 
             Datum datum = new Datum()
@@ -274,15 +286,9 @@ namespace CsgoBot
                 };
                 datumList.Add(datum);
                 SeciliItemler.AddRange(datumList);
-            //}
-            // tek bir ya da coklu thread olarak worker_thread metoduyla calistiriyoruz
+
             Worker.worker_threads(datumList);
 
-            //GenerateInventoryItems();
-
-            //EkranButonlar.CleanRows(dataGridView1);
-            //Thread.Sleep(1000);
-            //EkranButonlar.EnvanteriGoster(dataGridView1, SeciliItemler);
         }
      
         private void CancelItem(object sender, DataGridViewCellEventArgs e)
@@ -316,16 +322,6 @@ namespace CsgoBot
                 //Do something with your button.
 
             }
-
-
-            Worker.dongu = false;
-            Worker.fiyat_kontrol_dongusu = false;
-
-            EkranButonlar.CleanRows(dataGridView1);
-            Thread.Sleep(1000);
-            EkranButonlar.SatisListesiButton(dataGridView1, SeciliItemler);
-
-
         }
 
         private void ItemiGuncelle(object sender, DataGridViewCellEventArgs e)
@@ -376,21 +372,31 @@ namespace CsgoBot
             sb.Clear();
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
         public static void CleanRows(DataGridView dataGridView1)
         {
             dataGridView1.Rows.Clear();
             dataGridView1.Columns.Clear();
             dataGridView1.Refresh();
+        }
+
+        private List<InventoryItem> DistinctList(List<InventoryItem> list)
+        {
+            List<InventoryItem> newArr = new List<InventoryItem>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (newArr.Count == 0)
+                {
+                    newArr.Add(list[i]);
+                }
+                else
+                {
+                    var item = newArr.SingleOrDefault(x => x.steam_market_hash_name == list[i].steam_market_hash_name);
+                    if (item == null && list[i].tradable == true)
+                        newArr.Add(list[i]);
+                }
+            }
+            
+            return newArr;
         }
 
 
