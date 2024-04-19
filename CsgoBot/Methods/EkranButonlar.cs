@@ -208,7 +208,7 @@ namespace CsgoBot.Methods
                                               item.asset_id,
                                               item.suggested_price.ToString(),
                                               itemFiyatlari != null ?
-                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name)?.price :
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name)?.price.ToString():
                                               "İtem Fiyatı Bulunamadı",  
                                                 seciliITem?.baslangic_fiyati.ToString(),
                                                 seciliITem?.minimum_fiyat.ToString(),
