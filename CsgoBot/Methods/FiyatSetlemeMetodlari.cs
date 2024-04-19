@@ -13,28 +13,50 @@ namespace CsgoBot
     {
 
         static int count = 0;
-        public static String FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id) // return --> "E" "H" "satildi"
+        public static string FirstPriceSet(Datum item, String baslangicFiyati, String minimumFiyat,string asset_id) // return --> "E" "H" "satildi"
         {
             if (item == null)
             {
                 Console.WriteLine("İtem null geliyor\n");
-                return "E";
+                return "";
             }
             try
             {
                 Console.WriteLine($"Item satışa koymayi deniyor.. __{item?.steam_item?.steam_market_hash_name}__\n");
-
-                var offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati, item.steam_item.steam_market_hash_name);
-                if (offerResult == "E")
-                    Console.WriteLine($"Item ilk kez satisa kondu __{item?.steam_item?.steam_market_hash_name}__\n");
-                return offerResult;
+                bool dongu = true;
+                int index = 0;
+                bool offerResult = false;
+                while (!offerResult && index <= 3)
+                {
+                    offerResult = PostMethods.IlkFiyatSetleme(asset_id, baslangicFiyati, item.steam_item.steam_market_hash_name);
+                    if (offerResult)
+                    {
+                        Console.WriteLine($"Item ilk kez satisa kondu __{item?.steam_item?.steam_market_hash_name}__\n");
+                        offerResult = true;
+                        return "";
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Item ilk kez satisa konamadi 3 s sonra tekrar denenecek __{item?.steam_item?.steam_market_hash_name}__\n");
+                        Thread.Sleep(3000);
+                    }
+                    index++;
+                    if (index > 3)
+                    {
+                        Thread.Sleep(300000); // 5 dakika
+                    }
+                    if (index == 10)
+                    {
+                        offerResult = true;
+                        return item.asset_id;
+                    }
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine($"SatIşa koyma başarısız, error {e.Message}");
-                return "H";
             }
-            return "E";
+            return "";
         }
 
         public static bool FiyatGuncelle(double? minFiyat, Datum item, int miliseconds)
@@ -75,7 +97,7 @@ namespace CsgoBot
                 return false;
             }
             var result = PostMethods.MakeOffer(item, newPriceString, miliseconds);
-            if(result.status == "success") {
+            if(result?.status == "success") {
                 Console.WriteLine($"İtem fiyati degisti, yeni fiyat: {newPriceString} eski fiyat: {doubleLowestPrice} __{itemName}__ \n");
                 return true;
             };
