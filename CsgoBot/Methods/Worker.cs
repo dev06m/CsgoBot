@@ -12,9 +12,12 @@ namespace CsgoBot.Methods
     {
         public static bool dongu = true;
         public static int itemId;
+        public static string assetID = "";
         public static bool fiyat_kontrol_dongusu = false;
         static int count = 0;
         static Thread workerThread1;
+        static bool terminate_dongu = false;
+        static int asset_id;
         public static void worker_threads(List<Datum> datums)
         {
             ItemForm itemForm = new ItemForm();
@@ -49,8 +52,8 @@ namespace CsgoBot.Methods
 
             var threadId = Thread.CurrentThread.ManagedThreadId; // silinecek eger ise yaramiyorsa
             item.thread_id = threadId;
-            
-            while (dongu)
+
+            while (dongu && asset_id != assetID)
             {
                 fiyat_kontrol_dongusu = false;
                 int getIdCount = 0;
@@ -63,12 +66,13 @@ namespace CsgoBot.Methods
 
                 if (myItem == null)
                 { /* ILK BASTA FIYAT SETLEME */
-                    String ilk_setleme_sonuc = FiyatSetlemeMetodlari.FirstPriceSet(item, baslangicFiyati, minimumFiyat, asset_id);
-                    if (ilk_setleme_sonuc == "E")
+                    assetID = FiyatSetlemeMetodlari.FirstPriceSet(item, baslangicFiyati, minimumFiyat, asset_id);
+                    if (assetID == "")
                         fiyat_kontrol_dongusu = true;
                     else
                     {
                         fiyat_kontrol_dongusu = false;
+                        //dongu = false;
                         Thread.Sleep(item.interval_time);
                     }
                 }
@@ -86,7 +90,8 @@ namespace CsgoBot.Methods
                 // FIYAT DEGISIKLIGI VAR MI?
                 while(fiyat_kontrol_dongusu)
                 {
-                    if (!GetMethods.FiyatDegisikligiCheck(selectedItem))
+                    assetID = GetMethods.FiyatDegisikligiCheck(selectedItem);
+                    if (assetID == "")
                         fiyat_kontrol_dongusu = false;
                     bir_saat_bekle = selectedItem.bir_saat_bekle;
                     Thread.Sleep(item.interval_time); // 1,5 saniyede bir bak
@@ -108,6 +113,11 @@ namespace CsgoBot.Methods
             sb.Clear();
             */
             Console.WriteLine($"Thread kapatılıyor... ({item.steam_item.steam_market_hash_name})");
+            assetID = "";
+        }
+        public static void SetAssetID(string asset_id)
+        {
+            assetID = asset_id;
         }
     }
 }
