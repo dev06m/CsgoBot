@@ -194,17 +194,37 @@ namespace CsgoBot.Methods
             }
         }
 
-        public static bool FiyatDegisikligiCheck(Datum item)
+        public static string FiyatDegisikligiCheck(Datum item)
         {
             bool dongu = true;
             int sabitlenecek_zaman = Isimlendirmeler.SABITLENECEK_ZAMAN;
 
             var shadowEnDusukFiyat = GetMethods.ItemFiyatGetir(item.steam_item.steam_market_hash_name).Result;
-            double itemFiyati = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name));
-            if (itemFiyati == null || itemFiyati == 0)
+            double itemFiyati = 0;
+            int count = 0;
+            bool dongu_dene = true;
+            while (dongu_dene) // eger item fiyati null gelirse(satis olma durumu ya da too may request hatasi) 3 saniyede bir 3 defa tekrar deneyip 5 dk bekleyip tekrar deneyecek ve sonra basatisiz olursa thread kapanacak
             {
-                Console.WriteLine("İtem fiyatı null ya da 0");
-                //dongu = false;
+                itemFiyati = Convert.ToDouble(GetMethods.SatistakiItemFiyatiGetir(item.steam_item.steam_market_hash_name));
+                if (itemFiyati == null || itemFiyati == 0)
+                {
+                    Console.WriteLine($"İtem fiyatı null ya da 0({item.steam_item.steam_market_hash_name}), 3 saniye sonra tekrar denenecek\n");
+                    Thread.Sleep(3000);
+                } else if (item != null)
+                {
+                    dongu_dene = false;
+                }
+                count++;
+                if(count == 3)
+                {
+                    Console.WriteLine($"İtem fiyatı null ya da 0, 3 saniye sonra tekrar denenecek ({item.steam_item.steam_market_hash_name})\n");
+                    Thread.Sleep(30000);
+                }else if (count == 4)
+                {
+                    dongu_dene = false;
+                    return item.asset_id;
+                }
+
             }
 
             shadowEnDusukFiyat = shadowEnDusukFiyat != null ? shadowEnDusukFiyat : item.steam_item.suggested_price;
@@ -229,7 +249,7 @@ namespace CsgoBot.Methods
                 dongu = false;
                 item.bir_saat_bekle = 0;
             }
-            return dongu;
+            return "";
         }
 
         

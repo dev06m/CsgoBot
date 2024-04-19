@@ -42,52 +42,45 @@ namespace CsgoBot.Methods
             var stringContent = new StringContent(json, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", accessToken);
-
-            var retry = true;
-            
-            while (retry)
-            {
                 var response = new HttpResponseMessage();
+            try
+            {
+                response = client.PatchAsync(path, stringContent).Result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"hata var!!!!! {e.Message}\n");
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                var contentStream = response.Content.ReadAsStream();
+
+                using var streamReader = new StreamReader(contentStream);
                 try
                 {
-                    response = client.PatchAsync(path, stringContent).Result;
+                    var result = streamReader.ReadToEnd();
+                    var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
+                    return data != null ? data : new MakeOfferResponse();
+                }
+                catch (JsonReaderException)
+                {
+                    Console.WriteLine("Gecersiz JSON.");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"hata var!!!!! {e.Message}\n");
+                    Console.WriteLine(e.ToString());
                 }
-
-                if (response.IsSuccessStatusCode)
-                {
-                    retry = false;
-                    var contentStream = response.Content.ReadAsStream();
-
-                    using var streamReader = new StreamReader(contentStream);
-                    try
-                    {
-                        var result = streamReader.ReadToEnd();
-                        var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
-                        return data != null ? data : new MakeOfferResponse();
-                    }
-                    catch (JsonReaderException)
-                    {
-                        Console.WriteLine("Gecersiz JSON.");
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.ToString());
-                    }
-                }else
-                {
-                    Console.WriteLine("Fiyat seetleme basarisiz oldu, tekrar denenecek.");
-                }
+            }else
+            {
+                Console.WriteLine("Fiyat seetleme basarisiz oldu, tekrar denenecek.");
             }
             return null;
         }
 
-        public static String IlkFiyatSetleme(string asset_id, string price, string item_name) // "E" "H" "satildi"
+        public static bool IlkFiyatSetleme(string asset_id, string price, string item_name) // "E" "H" "satildi"
         {
-            Console.WriteLine($"İlk fiyat setleme başlıyor {item_name}");
+            Console.WriteLine($"İlk fiyat setleme başlıyor {item_name} \n");
             string path = "https://api.shadowpay.com/api/v2/user/offers";
             var accessToken = Isimlendirmeler.ACCESS_TOKEN;
 
@@ -97,30 +90,13 @@ namespace CsgoBot.Methods
 
             StringContent content = ContentProvider(asset_id, price, item);
 
-            var retry = true;
-            //while (retry)
-            //{
-                int count = 0;
-                HttpResponseMessage response = null;
+            int count = 0;
+            HttpResponseMessage response = null;
                 response = client.PostAsync(path, content).Result;
                 response.EnsureSuccessStatusCode();
 
-                //if (response.ReasonPhrase == "Unprocessable Entity")
-                //{
-                //    Console.WriteLine("Unprocessable Entity hatasi olustu, post istegi tekrar gonderiliyor... \n");
-                //    //if (count < 5)
-                //    //{
-                //    //    Console.WriteLine($"{count + 1}. deneme. \n");
-                //    //    count++;
-                //    //    //continue;
-                //    //}
-                //    retry = false;
-                //    Console.WriteLine($"Post denemeleri basarisiz oldu... \n");
-                //}
-
                 if (response.IsSuccessStatusCode)
                 {
-                    retry = false;
                     var contentStream = response.Content.ReadAsStream();
 
                     using var streamReader = new StreamReader(contentStream);
@@ -130,15 +106,15 @@ namespace CsgoBot.Methods
                         var data = JsonConvert.DeserializeObject<MakeOfferResponse>(result);
                         if (data.error_message == "inventory_items_mismatch")
                         {
-                            Console.WriteLine("İtme bulunamadı, satıldı ya da başka hata var.");
-                            return "satildi";
+                            Console.WriteLine($"İtme bulunamadı, satıldı ya da başka hata var. {item_name}");
+                            return false;
                         }
                         if (data.status == "error" && data.error_message == "user_got_autoban")
                         {
                             Console.WriteLine($"Fiyat setleme başarısız!! error : {result}\n");
                             if (data.error_message == "user_got_autoban")
                                 Thread.Sleep(3600000);
-                            return "H";
+                            return false;
                         }
                         //Worker.itemId = data.data[0].id;
                         Console.WriteLine($"Fiyat setleme başarılı... \n");
@@ -151,13 +127,13 @@ namespace CsgoBot.Methods
                     {
                         Console.WriteLine(e.ToString());
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
-                }
-            //}
-            return "E";
+            }
+            else
+            {
+                Console.WriteLine("Fiyat setleme basarisiz oldu, tekrar denenecek.");
+                return false;
+            }
+            return true;
         }
 
 
