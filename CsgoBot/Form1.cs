@@ -10,6 +10,7 @@ using System.Security;
 using System.ComponentModel;
 using CsgoBot.Assets;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 
 namespace CsgoBot
 {
@@ -41,6 +42,32 @@ namespace CsgoBot
                 Console.WriteLine("Envanter BOS GELIYORR!!!!!");
                 //inventory.data = Generate();
             }
+
+            /* get item data from db */
+            // SQL Server bağlantısı
+            //using (SqlConnection connection = new SqlConnection("Data Source=192.168.1.6;Initial Catalog=CSGO;User ID=sa;Password=.Database201.;"))
+            //{
+            //    connection.Open();
+
+            //    // SQL sorgusu
+            //    using (SqlCommand command = new SqlCommand("SELECT * FROM item", connection))
+            //    {
+            //        using (SqlDataReader reader = command.ExecuteReader())
+            //        {
+            //            // Verileri okuma
+            //            while (reader.Read())
+            //            {
+            //                var game = reader["game"].ToString();
+            //                var itemLink = reader["itemLink"].ToString();
+
+            //                // Verileri Windows Form kontrollerine yükleme
+            //                //textBox1.Text = reader["ColumnName"].ToString();
+            //                // Diğer kontrolleri de benzer şekilde doldurabilirsiniz.
+            //            }
+            //        }
+            //    }
+            //}
+
 
             dataGridView1.Visible = true;
             dataGridView1.Size = new System.Drawing.Size(1200, 1400);
@@ -90,7 +117,7 @@ namespace CsgoBot
                                               item.asset_id,
                                               item.suggested_price.ToString(),
                                               itemFiyatlari != null ?
-                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name)?.price :
+                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_market_hash_name)?.price.ToString() :
                                               "İtem Fiyatı Bulunamadı",
                                                 seciliITem?.baslangic_fiyati.ToString(), 
                                                 seciliITem?.minimum_fiyat.ToString(), 
@@ -183,7 +210,8 @@ namespace CsgoBot
             //dataGridView1.Columns.Add(checkColumn);
             //dataGridView1.Columns.Insert(KolonIsimleri.SATIS_GUNCELLE, itemiGuncelle);
 
-            // check box
+            // site fiyati vs kendi fiyati esitse boya
+            dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].DefaultCellStyle.BackColor = Color.OrangeRed;
 
             dataGridView1.Columns[0].Width = 350;
 
@@ -194,19 +222,28 @@ namespace CsgoBot
             foreach (var item in satistakiItemler)
             {
                 var seciliITem = SeciliItemler.Where(x => x.asset_id == item.asset_id).FirstOrDefault();
+                var site_fiyati = itemFiyatlari?.FirstOrDefault(x => x.steam_market_hash_name == item.steam_item.steam_market_hash_name).price;
                 string[] row = new string[] {
                                               item.steam_item.steam_market_hash_name,
                                               item.asset_id,
                                               item.steam_item.suggested_price.ToString(),
                                                itemFiyatlari != null ?
-                                              itemFiyatlari.FirstOrDefault(x => x.steam_market_hash_name == item.steam_item.steam_market_hash_name).price  + "  -  " + item.price:
+                                              site_fiyati + "  -  " + item.price:
                                               "İtem Fiyatı Bulunamadı",
 
                                               seciliITem?.baslangic_fiyati.ToString(),
                                               seciliITem?.minimum_fiyat.ToString(),
                                               seciliITem?.interval_time.ToString(),
                                               item.id.ToString()
-            };
+                };
+                double sF = Convert.ToDouble(site_fiyati?.ToString().Replace(".", ","));
+                double iF = Convert.ToDouble(item?.price);
+                if (sF == iF || sF > iF)
+                {
+                    dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].DefaultCellStyle.BackColor = Color.LightGreen;
+                }
+                else if (sF < iF)
+                    dataGridView1.Columns[KolonIsimleri.SITE_SATIS_FIYATI].DefaultCellStyle.BackColor = Color.OrangeRed;
                 dataGridView1.Rows.Add(row);
             }
 
@@ -231,7 +268,7 @@ namespace CsgoBot
             if (!dataGridView1.Columns.Contains(Isimlendirmeler.BASLAT)) // Başlat
                 return;
 
-            Console.WriteLine($"Task başladı: {dataGridView1.Rows[e.RowIndex].Cells[KolonIsimleri.AD].Value.ToString()}\n");
+            Console.WriteLine($"\tTask başladı: {dataGridView1.Rows[e.RowIndex].Cells[KolonIsimleri.AD].Value.ToString()}\n");
 
             string path = "https://api.shadowpay.com/api/v2/user/inventory";
 
@@ -296,7 +333,7 @@ namespace CsgoBot
             // buton disinda bir yere tiklanirsa gec
             if (e.ColumnIndex != 8)
                 return;
-            // envanteri goster ekraninda tiklanirsa gec
+            // envanteri goster ekraninda tiklanirsa gecFalt
             if (!dataGridView1.Columns.Contains(Isimlendirmeler.SATIS_IPTAL))
                 return;
 
@@ -306,6 +343,7 @@ namespace CsgoBot
             if (e.ColumnIndex == dataGridView1.Columns[Isimlendirmeler.SATIS_IPTAL].Index)
             {
                 var rows = dataGridView1.Rows;
+                String asset_id = null;
                 foreach (DataGridViewRow row in rows)
                 {
                     var a = row.Cells[Isimlendirmeler.SATIS_IPTAL].RowIndex;
@@ -314,12 +352,15 @@ namespace CsgoBot
                     {
                         Console.WriteLine("HEYYYYY");
                         itemId = row.Cells["ITEM ID"]?.Value.ToString();
+                        asset_id = row.Cells["ASSET ID"]?.Value.ToString();
                     }
 
                 }
                 if (itemId != null)
                     PostMethods.CancelOffer(itemId);
                 //Do something with your button.
+                Worker.SetAssetID(asset_id);
+
 
             }
         }
@@ -382,7 +423,7 @@ namespace CsgoBot
         private List<InventoryItem> DistinctList(List<InventoryItem> list)
         {
             List<InventoryItem> newArr = new List<InventoryItem>();
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < list?.Count; i++)
             {
                 if (newArr.Count == 0)
                 {
