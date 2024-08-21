@@ -31,14 +31,15 @@
             this.GetInventoryItems = new System.Windows.Forms.Button();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.SatisListesiBtn = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // GetInventoryItems
             // 
-            this.GetInventoryItems.Location = new System.Drawing.Point(59, 21);
+            this.GetInventoryItems.Location = new System.Drawing.Point(59, 22);
             this.GetInventoryItems.Name = "GetInventoryItems";
-            this.GetInventoryItems.Size = new System.Drawing.Size(137, 52);
+            this.GetInventoryItems.Size = new System.Drawing.Size(137, 55);
             this.GetInventoryItems.TabIndex = 3;
             this.GetInventoryItems.Text = "Envanteri Goster (Itemler)";
             this.GetInventoryItems.UseVisualStyleBackColor = true;
@@ -47,38 +48,45 @@
             // dataGridView1
             // 
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(59, 79);
+            this.dataGridView1.Location = new System.Drawing.Point(59, 83);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.RowTemplate.Height = 29;
-            this.dataGridView1.Size = new System.Drawing.Size(1296, 551);
+            this.dataGridView1.Size = new System.Drawing.Size(1296, 580);
             this.dataGridView1.TabIndex = 5;
-            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.baslat_click);
             this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.CancelItem);
-            this.dataGridView1.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.CancelItem);
-            //this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // SatisListesiBtn
             // 
-            this.SatisListesiBtn.Location = new System.Drawing.Point(229, 21);
+            this.SatisListesiBtn.Location = new System.Drawing.Point(229, 22);
             this.SatisListesiBtn.Name = "SatisListesiBtn";
-            this.SatisListesiBtn.Size = new System.Drawing.Size(146, 52);
+            this.SatisListesiBtn.Size = new System.Drawing.Size(146, 55);
             this.SatisListesiBtn.TabIndex = 12;
             this.SatisListesiBtn.Text = "Satış Listesi";
             this.SatisListesiBtn.UseVisualStyleBackColor = true;
             this.SatisListesiBtn.Click += new System.EventHandler(this.SatisListesiButton);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(607, 36);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(94, 29);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "Fetch items";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
+            // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1482, 715);
+            this.ClientSize = new System.Drawing.Size(1482, 753);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.SatisListesiBtn);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.GetInventoryItems);
             this.Name = "Form1";
             this.Text = "Form1";
-            //this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
@@ -91,5 +99,6 @@
         private Button SatisListesiBtn;
         private TextBox satisIdText;
         private Button button2;
+        private Button button1;
     }
 }

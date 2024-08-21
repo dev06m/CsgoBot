@@ -440,6 +440,18 @@ namespace CsgoBot
             return newArr;
         }
 
+        private async void button1_Click_1(object sender, EventArgs e)
+        {
+            GetMethods.GetAllLisskinHistroy();
+            //GetMethods.GetAllDotaItems_Buff163();
+        }
+
+        public class Nesne
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
+            public int PageNum { get; set; }
+        }
 
     }
 }
